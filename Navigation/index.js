@@ -21,6 +21,7 @@ import AutoScreen from '../Screen/AutoScreen';
 import TabNavigation from './TabNavigation';
 import ViewStatusRoom from '../Screen/ViewStatusRoom';
 import RoomDetailScreen from '../Screen/RoomDetailScreen';
+import CameraScreen from '../Screen/CameraScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 const Navigation = () => {
@@ -60,6 +61,7 @@ const Navigation = () => {
                 )}
                 <Stack.Screen name="ViewStatus" component={ViewStatusRoom} />
                 <Stack.Screen name="RoomDetail" component={RoomDetailScreen} />
+                <Stack.Screen name="CameraScreen" component={CameraScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

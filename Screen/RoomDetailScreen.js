@@ -1,12 +1,18 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Platform, Alert } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import Customer from '../Components/RoomScreen/Customer';
+import { Camera } from 'expo-camera';
+import { BarCodeScanner } from 'expo-barcode-scanner';
+import { Audio } from 'expo-av';
 var { width, height } = Dimensions.get('window');
 const RoomDetailScreen = ({ route }) => {
     const navigation = useNavigation();
+    const [hasPermission, setHasPermission] = useState(null);
+    const [datatmp, setDataTmp] = useState('');
+    const [sound, setSound] = React.useState();
     const roomName = route.params.roomName;
     const data = {
         checkindate: '08-07-2022',
@@ -20,47 +26,82 @@ const RoomDetailScreen = ({ route }) => {
     const customerlist = [
         {
             name: 'Hoàng Tuấn Anh',
-            cccd: '123123123',
+            number: '123123123',
             birthday: '18-07-2000',
             gen: 'male',
+            address: 'value[5]',
         },
         {
             name: 'Hoàng Tuấn Anh',
-            cccd: '123123123',
+            number: '123123123',
             birthday: '18-07-2000',
             gen: 'male',
-        },
-        {
-            name: 'Hoàng Tuấn Anh',
-            cccd: '123123123',
-            birthday: '18-07-2000',
-            gen: 'male',
-        },
-        {
-            name: 'Hoàng Tuấn Anh Đẹp trai nhất làng',
-            cccd: '123123123',
-            birthday: '18-07-2000',
-            gen: 'male',
-        },
-        {
-            name: 'Hoàng Tuấn Anh',
-            cccd: '123123123',
-            birthday: '18-07-2000',
-            gen: 'male',
-        },
-        {
-            name: 'Hoàng Tuấn Anh',
-            cccd: '123123123',
-            birthday: '18-07-2000',
-            gen: 'male',
-        },
-        {
-            name: 'Hoàng Tuấn Anh',
-            cccd: '123123123',
-            birthday: '18-07-2000',
-            gen: 'male',
+            address: 'value[5]',
         },
     ];
+    const [list, setList] = useState(customerlist);
+    async function playSound() {
+        console.log('Loading Sound');
+        const { sound } = await Audio.Sound.createAsync(require('../assets/beep.mp3'));
+        setSound(sound);
+
+        console.log('Playing Sound');
+        await sound.playAsync();
+    }
+    const handleBarCodeScanned = ({ type, data }) => {
+        if (data !== datatmp) {
+            alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+            setDataTmp(data);
+            const check = data.indexOf('|');
+            if (check != -1) {
+                const value = data.split('|');
+                const new_data = {
+                    address: value[5],
+                    birthday: value[3],
+                    gen: value[4],
+                    number: value[0],
+                    name: value[2],
+                };
+                setList([...list, new_data]);
+            } else {
+                const values = data.split('\n');
+                const new_data = {
+                    address: values[4],
+                    birthday: values[2],
+                    gen: '',
+                    number: values[0],
+                    name: values[1],
+                };
+                setList([...list, new_data]);
+                console.log(data);
+            }
+
+            playSound();
+        }
+    };
+    useEffect(() => {
+        (async () => {
+            const { status } = await Camera.requestCameraPermissionsAsync();
+        })();
+    }, []);
+    const handleAddCustomer = () => {
+        setHasPermission(!hasPermission);
+    };
+    const removeItemHandle = ({ indexList }) => {
+        Alert.alert('Delete', 'Bạn muốn xóa ?', [
+            {
+                text: 'Cancel',
+                style: 'cancel',
+            },
+            {
+                text: 'OK',
+                onPress: () => {
+                    const newList = list.filter((item, index) => index !== indexList);
+                    setList(newList);
+                },
+            },
+        ]);
+    };
     return (
         <View style={{ flex: 1, marginTop: 20 }}>
             <View style={styles.header}>
@@ -74,8 +115,37 @@ const RoomDetailScreen = ({ route }) => {
                     <Text style={styles.header_title}>Room {roomName}</Text>
                 </View>
             </View>
-            <View style={styles.container}>
+            <View style={[styles.container]}>
                 <View style={styles.card}>
+                    <View style={{ zIndex: 1 }}>
+                        {hasPermission === true ? (
+                            Platform.OS === 'ios' ? (
+                                <Camera
+                                    style={styles.camera}
+                                    type="back"
+                                    onBarCodeScanned={handleBarCodeScanned}
+                                    focusDepth={1}
+                                ></Camera>
+                            ) : (
+                                <View
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        height: 500,
+                                        width: '100%',
+                                    }}
+                                >
+                                    <BarCodeScanner
+                                        onBarCodeScanned={handleBarCodeScanned}
+                                        style={StyleSheet.absoluteFillObject}
+                                    />
+                                </View>
+                            )
+                        ) : (
+                            <View />
+                        )}
+                    </View>
                     <Image
                         source={require('../Asset/Card.png')}
                         borderRadius={24}
@@ -134,16 +204,30 @@ const RoomDetailScreen = ({ route }) => {
                             Customer List
                         </Text>
                     </View>
-                    <ScrollView style={{ height: 200, width: '80%', marginTop: 10 }}>
-                        {customerlist.map((customer, index) => {
-                            return <Customer index={index} name={customer.name} cccd={customer.cccd}></Customer>;
+                    <ScrollView style={{ maxHeight: 200, width: '80%', marginTop: 10, marginBottom: 5 }}>
+                        {list.map((customer, index) => {
+                            console.log(customer);
+                            return (
+                                <Customer
+                                    index={index}
+                                    name={customer.name}
+                                    cccd={customer.number}
+                                    key={index}
+                                    removeitem={() => removeItemHandle({ indexList: index })}
+                                ></Customer>
+                            );
                         })}
                     </ScrollView>
-                    <TouchableOpacity onPress={() => console.log('Add More')}>
-                        <View style={styles.addmorebtn}>
-                            <Text style={{ color: '#2EC4B6' }}>Add More</Text>
-                        </View>
-                    </TouchableOpacity>
+
+                    <View style={styles.addmorebtn}>
+                        <TouchableOpacity onPress={() => handleAddCustomer()}>
+                            {hasPermission === true ? (
+                                <Text> Finish </Text>
+                            ) : (
+                                <Text style={{ color: '#2EC4B6' }}>Add More</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <View style={styles.footer}>
@@ -176,6 +260,10 @@ const styles = StyleSheet.create({
         borderBottomColor: '#D9D9D9',
         borderBottomWidth: 1,
         paddingTop: 5,
+    },
+    camera: {
+        height: '100%',
+        width: '100%',
     },
     footer: {
         position: 'absolute',
@@ -218,6 +306,7 @@ const styles = StyleSheet.create({
         width: 330,
         borderRadius: 24,
         position: 'relative',
+        overflow: 'hidden',
     },
     price_number: {
         fontSize: 20,
@@ -246,7 +335,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '400',
         lineHeight: 24,
-        overflow: 'hidden',
+        // overflow: 'hidden',
     },
     card_data: {
         fontSize: 16,

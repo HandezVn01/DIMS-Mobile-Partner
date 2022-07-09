@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-const Customer = ({ index, name, cccd }) => {
+const Customer = ({ index, name, cccd, removeitem }) => {
     return (
         <View style={styles.customer} key={index}>
             <View style={{ width: '10%', alignItems: 'center' }}>
@@ -14,7 +14,9 @@ const Customer = ({ index, name, cccd }) => {
                 <Text>{cccd}</Text>
             </View>
             <View style={{ right: -5, position: 'absolute' }}>
-                <Icon name="close" size={24}></Icon>
+                <TouchableOpacity onPress={removeitem}>
+                    <Icon name="close" size={24}></Icon>
+                </TouchableOpacity>
             </View>
         </View>
     );

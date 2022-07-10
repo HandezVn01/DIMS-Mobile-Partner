@@ -8,9 +8,10 @@ var { width, height } = Dimensions.get('window');
 const ViewStatusRoom = ({ route }) => {
     const title = route.params.title;
     const navigation = useNavigation();
-    const handleRoom = ({ roomName }) => {
+    const handleRoom = ({ roomName, status }) => {
         navigation.navigate('RoomDetail', {
             roomName: roomName,
+            status: status,
         });
     };
     return (
@@ -24,8 +25,11 @@ const ViewStatusRoom = ({ route }) => {
                 <Text style={styles.header_title}>{title}</Text>
             </View>
             <View style={styles.container}>
-                <TouchableOpacity onPress={() => handleRoom({ roomName: '101' })}>
-                    <Text>Oke</Text>
+                <TouchableOpacity onPress={() => handleRoom({ roomName: '101', status: '1' })}>
+                    <Text>101</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleRoom({ roomName: '102', status: '2' })}>
+                    <Text>102</Text>
                 </TouchableOpacity>
             </View>
         </View>

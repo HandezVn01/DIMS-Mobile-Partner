@@ -1,5 +1,16 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Platform, Alert } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Image,
+    ScrollView,
+    Platform,
+    Animated,
+    Alert,
+    SafeAreaView,
+} from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
 import { Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
@@ -13,7 +24,9 @@ const RoomDetailScreen = ({ route }) => {
     const [hasPermission, setHasPermission] = useState(null);
     const [datatmp, setDataTmp] = useState('');
     const [sound, setSound] = React.useState();
+    const [checkOutShow, setCheckOutShow] = useState(false);
     const roomName = route.params.roomName;
+    const checkoutShowRef = useRef(new Animated.Value(0)).current;
     const data = {
         checkindate: '08-07-2022',
         checkoutdate: '09-07-2022',
@@ -79,6 +92,22 @@ const RoomDetailScreen = ({ route }) => {
             playSound();
         }
     };
+    const handleCheckOut = () => {
+        if (checkOutShow) {
+            Animated.timing(checkoutShowRef, {
+                toValue: 0,
+                duration: 500,
+                useNativeDriver: true,
+            }).start();
+        } else {
+            Animated.timing(checkoutShowRef, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+            }).start();
+        }
+        setCheckOutShow(!checkOutShow);
+    };
     useEffect(() => {
         (async () => {
             const { status } = await Camera.requestCameraPermissionsAsync();
@@ -103,7 +132,7 @@ const RoomDetailScreen = ({ route }) => {
         ]);
     };
     return (
-        <View style={{ flex: 1, marginTop: 20 }}>
+        <SafeAreaView style={{ flex: 1, marginTop: 20, overflow: 'hidden' }}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <View style={styles.back}>
@@ -191,47 +220,113 @@ const RoomDetailScreen = ({ route }) => {
                         </View>
                     </View>
                 </View>
-
-                <View style={styles.customerlist}>
-                    <View style={styles.customerlist_header}>
-                        <Text
+                <View
+                    style={{
+                        position: 'relative',
+                        height: height - ((height * 3) / 20 + 210),
+                        width: '100%',
+                    }}
+                >
+                    <Animated.View
+                        style={[
+                            {
+                                height: '100%',
+                                width: '100%',
+                                position: 'absolute',
+                                backgroundColor: '#fff',
+                                zIndex: checkoutShowRef,
+                                borderColor: '#3DC5B5',
+                                borderWidth: 2,
+                                borderTopRightRadius: 15,
+                                borderTopLeftRadius: 15,
+                                flex: 1,
+                            },
+                            { opacity: checkoutShowRef },
+                        ]}
+                    >
+                        <View
                             style={{
-                                fontSize: 16,
-                                fontWeight: '500',
-                                color: '#3DC5B5',
+                                padding: 10,
+                                paddingRight: 20,
+                                paddingLeft: 20,
+                                borderBottomColor: '#D5F3F0',
+                                borderBottomWidth: 1,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                flex: 1,
                             }}
                         >
-                            Customer List
-                        </Text>
-                    </View>
-                    <ScrollView style={{ maxHeight: 200, width: '80%', marginTop: 10, marginBottom: 5 }}>
-                        {list.map((customer, index) => {
-                            console.log(customer);
-                            return (
-                                <Customer
-                                    index={index}
-                                    name={customer.name}
-                                    cccd={customer.number}
-                                    key={index}
-                                    removeitem={() => removeItemHandle({ indexList: index })}
-                                ></Customer>
-                            );
-                        })}
-                    </ScrollView>
+                            <Text>Check Out</Text>
+                            <TouchableOpacity onPress={handleCheckOut}>
+                                <Icon name="close-outline" size={24}></Icon>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ flex: 7 }}>
+                            <ScrollView>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
 
-                    <View style={styles.addmorebtn}>
-                        <TouchableOpacity onPress={() => handleAddCustomer()}>
-                            {hasPermission === true ? (
-                                <Text> Finish </Text>
-                            ) : (
-                                <Text style={{ color: '#2EC4B6' }}>Add More</Text>
-                            )}
-                        </TouchableOpacity>
+                                <Text>Hello Handez</Text>
+                                <Text>Hello Handez</Text>
+                            </ScrollView>
+                        </View>
+                        <View style={{ flex: 2 }}></View>
+                    </Animated.View>
+
+                    <View style={styles.customerlist}>
+                        <View style={styles.customerlist_header}>
+                            <Text
+                                style={{
+                                    fontSize: 16,
+                                    fontWeight: '500',
+                                    color: '#3DC5B5',
+                                }}
+                            >
+                                Customer List
+                            </Text>
+                        </View>
+                        <ScrollView style={{ maxHeight: 200, width: '80%', marginTop: 10, marginBottom: 5 }}>
+                            {list.map((customer, index) => {
+                                console.log(customer);
+                                return (
+                                    <Customer
+                                        index={index}
+                                        name={customer.name}
+                                        cccd={customer.number}
+                                        key={index}
+                                        removeitem={() => removeItemHandle({ indexList: index })}
+                                    ></Customer>
+                                );
+                            })}
+                        </ScrollView>
+
+                        <View style={styles.addmorebtn}>
+                            <TouchableOpacity onPress={() => handleAddCustomer()}>
+                                {hasPermission === true ? (
+                                    <Text> Finish </Text>
+                                ) : (
+                                    <Text style={{ color: '#2EC4B6' }}>Add More</Text>
+                                )}
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
 
-                <View style={styles.footer}>
-                    <TouchableOpacity onPress={() => console.log('checkout')}>
+                <Animated.View style={[styles.footer, { opacity: checkOutShow === false ? 1 : 0 }]}>
+                    <TouchableOpacity onPress={handleCheckOut}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Icon name="logout" size={36} color={'#2EC4B6'}></Icon>
                             <Text
@@ -246,9 +341,26 @@ const RoomDetailScreen = ({ route }) => {
                             </Text>
                         </View>
                     </TouchableOpacity>
-                </View>
+                </Animated.View>
+                <Animated.View style={[styles.footer, { opacity: checkOutShow === true ? 1 : 0 }]}>
+                    <TouchableOpacity onPress={handleCheckOut}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Icon name="logout" size={36} color={'#2EC4B6'}></Icon>
+                            <Text
+                                style={{
+                                    color: '#2EC4B6',
+                                    fontSize: 18,
+                                    fontWeight: '500',
+                                    letterSpacing: 1,
+                                }}
+                            >
+                                Next
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                </Animated.View>
             </View>
-        </View>
+        </SafeAreaView>
     );
 };
 const styles = StyleSheet.create({
@@ -275,6 +387,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderTopColor: '#2EC4B6',
         borderTopWidth: 3,
+        zIndex: 1,
     },
     addmorebtn: {
         height: 32,
@@ -360,6 +473,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 17,
         alignItems: 'center',
+        position: 'relative',
     },
     back: {
         height: 42,

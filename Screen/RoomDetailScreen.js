@@ -212,9 +212,8 @@ const RoomDetailScreen = ({ route }) => {
         });
         sum = parseInt(sum) + parseInt(extraFee || 0);
         setTotal(totalTmp + sum);
-        console.log(sum);
     }, [extraFee]);
-    // console.log(topPadding, bottomPadding);
+
     return (
         <SafeAreaView style={{ flex: 1, marginTop: 20, overflow: 'hidden' }}>
             <View style={styles.header}>
@@ -230,7 +229,7 @@ const RoomDetailScreen = ({ route }) => {
             </View>
 
             <View style={[styles.container]}>
-                <KeyboardAwareScrollView scrollToOverflowEnabled={true} scrollEnabled={false}>
+                <KeyboardAwareScrollView enableAutomaticScroll={true}>
                     <View style={{ alignItems: 'center' }}>
                         <View style={styles.card}>
                             <View style={{ zIndex: 1 }}>

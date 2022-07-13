@@ -37,7 +37,7 @@ export default function LoginScreen() {
                             .then(async (result) => {
                                 if (result.role === 'HOST') {
                                     dispatch(dispatchSuccess(data));
-                                    dispatch(dispatchLogin(data));
+                                    dispatch(dispatchLogin(result));
                                     await AsyncStorage.setItem('@user', data.token);
                                     navigation.navigate('Home');
                                 } else {

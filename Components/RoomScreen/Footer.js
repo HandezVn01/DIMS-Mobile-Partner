@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const Footer = ({ status }) => {
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Icon name={status == 1 ? 'logout' : 'login'} size={36} color={'#2EC4B6'}></Icon>
+            <Icon name={status == 2 ? 'logout' : 'login'} size={36} color={'#2EC4B6'}></Icon>
             <Text
                 style={{
                     color: '#2EC4B6',
@@ -13,7 +13,7 @@ const Footer = ({ status }) => {
                     letterSpacing: 1,
                 }}
             >
-                {status == 1 ? 'Check Out' : 'Check In'}
+                {status == 2 ? 'Check Out' : 'Check In'}
             </Text>
         </View>
     );

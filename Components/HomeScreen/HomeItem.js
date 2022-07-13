@@ -1,14 +1,57 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
-
-const HomeItem = ({ title, icon, backgroundColor }) => {
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch, useSelector } from 'react-redux';
+import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
+import * as RoomStatusAPI from '../../Api/RoomStatus';
+const HomeItem = ({ title, icon, backgroundColor, index }) => {
     const navigation = useNavigation();
+    const [token, setToken] = useState('');
+    const dispatch = useDispatch();
+    let today = new Date();
+    let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    const gettoken = async () => {
+        const user = await AsyncStorage.getItem('@user');
+        return user;
+    };
+    const get = gettoken();
+    get.then((data) => setToken(data));
     const handleClick = () => {
-        navigation.navigate('ViewStatus', {
-            title: title,
-        });
+        const test = async () => {
+            const go = (data) => {
+                navigation.navigate('ViewStatus', {
+                    title: title,
+                    index: index,
+                    data: data,
+                });
+            };
+            dispatch(dispatchFecth());
+            if (index == 1) {
+                await RoomStatusAPI.GetAllStatus(token, today, 0)
+                    .then((data) => {
+                        go(data);
+                    })
+                    .catch((err) => console.log(err));
+            }
+            if (index == 2) {
+                await RoomStatusAPI.GetStatusSearch(token, today, 0, 1)
+                    .then((data) => {
+                        go(data);
+                    })
+                    .catch((err) => console.log(err));
+            }
+            if (index == 3) {
+                await RoomStatusAPI.GetStatusCheckOut(token, today, 0)
+                    .then((data) => {
+                        go(data);
+                    })
+                    .catch((err) => console.log(err));
+            }
+            dispatch(dispatchSuccess());
+        };
+        test();
     };
     return (
         <TouchableOpacity onPress={handleClick}>

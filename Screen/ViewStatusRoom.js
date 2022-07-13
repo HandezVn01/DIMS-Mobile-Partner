@@ -1,19 +1,69 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../redux/actions/authAction';
+import * as RoomStatusAPI from '../Api/RoomStatus';
 
 var { width, height } = Dimensions.get('window');
 const ViewStatusRoom = ({ route }) => {
     const title = route.params.title;
     const navigation = useNavigation();
-    const handleRoom = ({ roomName, status }) => {
+    const dispatch = useDispatch();
+    const handleRoom = ({ roomName, status, roomId }) => {
         navigation.navigate('RoomDetail', {
             roomName: roomName,
             status: status,
+            roomId: roomId,
         });
     };
+
+    const [datas, setDatas] = useState(route.params.data);
+
+    const removeDulicate = (arr) => {
+        const uniqueIds = [];
+        const unique = arr.filter((element) => {
+            const isDuplicate = uniqueIds.includes(element.id);
+
+            if (!isDuplicate) {
+                uniqueIds.push(element.id);
+
+                return true;
+            }
+
+            return false;
+        });
+        return unique;
+    };
+
+    let floorlist = [];
+    let categoryList = [];
+    try {
+        const abc = () => {
+            if (datas.length > 0) {
+                datas.map((data) => {
+                    floorlist.push({
+                        id: data.floor,
+                        floor: data.floor,
+                    });
+                    categoryList.push({
+                        id: data.categoryId,
+                        categoryName: data.categoryName,
+                    });
+                });
+                floorlist = removeDulicate(floorlist);
+                categoryList = removeDulicate(categoryList);
+                const test = datas.filter((data) => {
+                    return data.floor == floorlist[0].floor;
+                });
+            }
+        };
+        abc();
+        console.log(datas);
+    } catch (error) {}
+
     return (
         <View style={{ flex: 1, marginTop: 20 }}>
             <View style={styles.header}>
@@ -25,6 +75,70 @@ const ViewStatusRoom = ({ route }) => {
                 <Text style={styles.header_title}>{title}</Text>
             </View>
             <View style={styles.container}>
+                {floorlist.map((floor, index) => {
+                    return (
+                        <View style={{ height: 100 }} key={index}>
+                            <ScrollView horizontal={true}>
+                                <View style={{ padding: 10 }}>
+                                    <View>
+                                        <Text style={{ fontSize: 16, fontWeight: '700', paddingLeft: 15 }}>
+                                            Lầu {floor.floor + 1}
+                                        </Text>
+                                    </View>
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            paddingRight: 20,
+                                            paddingLeft: 20,
+                                            paddingTop: 5,
+                                        }}
+                                    >
+                                        {datas.map((data, index) => {
+                                            if (data.floor === floor.floor) {
+                                                return (
+                                                    <View key={data + index}>
+                                                        <TouchableOpacity
+                                                            style={{
+                                                                paddingRight: 20,
+                                                                paddingLeft: 20,
+                                                                alignItems: 'center',
+                                                            }}
+                                                            onPress={() =>
+                                                                handleRoom({
+                                                                    roomName: data.roomName,
+                                                                    status: data.status,
+                                                                    roomId: data.roomId,
+                                                                })
+                                                            }
+                                                        >
+                                                            <Icon
+                                                                name="home"
+                                                                size={24}
+                                                                color={
+                                                                    data.allStatus == 2
+                                                                        ? '#3DC5B5'
+                                                                        : data.allStatus == 3
+                                                                        ? '#E31717'
+                                                                        : data.allStatus == 1
+                                                                        ? ''
+                                                                        : data.bookedStatus != null
+                                                                        ? '#F9A000'
+                                                                        : ''
+                                                                }
+                                                            ></Icon>
+                                                            <Text>{data.roomName}</Text>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                );
+                                            }
+                                        })}
+                                    </View>
+                                </View>
+                            </ScrollView>
+                        </View>
+                    );
+                })}
+
                 <TouchableOpacity onPress={() => handleRoom({ roomName: '101', status: '1' })}>
                     <Text>101</Text>
                 </TouchableOpacity>
@@ -47,7 +161,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 17,
-        backgroundColor: 'pink',
     },
     back: {
         height: 42,

@@ -29,19 +29,20 @@ var { width, height } = Dimensions.get('window');
 const RoomDetailScreen = ({ route }) => {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
-    const [hasPermission, setHasPermission] = useState(null);
+    const [hasPermission, setHasPermission] = useState(false);
     const [datatmp, setDataTmp] = useState('');
     const [sound, setSound] = React.useState();
     const [checkOutShow, setCheckOutShow] = useState(false);
     // Get infomation from params
     const roomName = route.params.roomName;
     const status = route.params.status;
+    const roomid = route.params.roomId;
     //
 
     const checkoutShowRef = useRef(new Animated.Value(0)).current;
     const [extraFee, setExtraFee] = useState(0);
     const data =
-        status == 1
+        status == 2
             ? {
                   checkindate: '08-07-2022',
                   checkoutdate: '09-07-2022',
@@ -118,6 +119,7 @@ const RoomDetailScreen = ({ route }) => {
     ];
     const [list, setList] = useState(customerlist);
     const [itemListUse, setItemListUse] = useState(itemList);
+    const [actionName, setActionName] = useState(status == 1 ? 'Next' : 'Submit');
     async function playSound() {
         const { sound } = await Audio.Sound.createAsync(require('../assets/beep.mp3'));
         setSound(sound);
@@ -154,9 +156,18 @@ const RoomDetailScreen = ({ route }) => {
             playSound();
         }
     };
-    const handleCheckIn = () => {};
-
-    const handleCheckOut = () => {
+    const handleCheckIn = () => {
+        setActionName('Next');
+        setHasPermission(!hasPermission);
+        setCheckOutShow(!checkOutShow);
+    };
+    const handleCheckInSubmit = () => {
+        setHasPermission(!hasPermission);
+    };
+    const handleCheckOutSubmit = () => {
+        setCheckOutShow(!checkOutShow);
+    };
+    const handleShowUp = () => {
         if (checkOutShow) {
             Animated.timing(checkoutShowRef, {
                 toValue: 0,
@@ -223,7 +234,7 @@ const RoomDetailScreen = ({ route }) => {
                     </View>
                 </TouchableOpacity>
                 <View style={styles.header_content}>
-                    <Icon name="home" size={24} color={status == 1 ? '#3DC5B5' : '#000'}></Icon>
+                    <Icon name="home" size={24} color={status == 2 ? '#3DC5B5' : '#000'}></Icon>
                     <Text style={styles.header_title}>Room {roomName}</Text>
                 </View>
             </View>
@@ -262,7 +273,7 @@ const RoomDetailScreen = ({ route }) => {
                                 )}
                             </View>
                             <Image
-                                source={require('../Asset/Card.png')}
+                                source={require('../assets/Card.png')}
                                 borderRadius={24}
                                 style={{ height: '100%', width: '100%' }}
                             />
@@ -334,12 +345,13 @@ const RoomDetailScreen = ({ route }) => {
                                         borderWidth: 2,
                                         borderTopRightRadius: 15,
                                         borderTopLeftRadius: 15,
+                                        borderBottomWidth: 0,
                                         flex: 1,
                                     },
                                     { opacity: checkoutShowRef },
                                 ]}
                             >
-                                {status == 2 ? (
+                                {status == 1 ? (
                                     <View style={{ height: '100%', width: '100%' }}>
                                         <View
                                             style={{
@@ -363,12 +375,12 @@ const RoomDetailScreen = ({ route }) => {
                                                 Room {roomName} : Check In
                                             </Text>
                                             <Text>
-                                                <TouchableOpacity onPress={handleCheckOut}>
+                                                <TouchableOpacity onPress={handleShowUp}>
                                                     <Icon name="close-outline" size={24}></Icon>
                                                 </TouchableOpacity>
                                             </Text>
                                         </View>
-                                        <View style={{ flex: 7 }}>
+                                        <View style={{ flex: 9 }}>
                                             <ScrollView
                                                 style={{
                                                     height: '100%',
@@ -455,31 +467,6 @@ const RoomDetailScreen = ({ route }) => {
                                                 ></InputCompunent>
                                             </ScrollView>
                                         </View>
-                                        <View style={{ flex: 2, alignItems: 'center' }}>
-                                            <TouchableOpacity>
-                                                <View
-                                                    style={{
-                                                        height: 40,
-                                                        width: 150,
-                                                        backgroundColor: '#2EC4B6',
-                                                        borderRadius: 20,
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        marginTop: 10,
-                                                    }}
-                                                >
-                                                    <Text
-                                                        style={{
-                                                            color: '#fff',
-                                                            fontSize: 20,
-                                                            fontWeight: '600',
-                                                        }}
-                                                    >
-                                                        Submit
-                                                    </Text>
-                                                </View>
-                                            </TouchableOpacity>
-                                        </View>
                                     </View>
                                 ) : (
                                     <View style={{ height: '100%', width: '100%' }}>
@@ -501,7 +488,7 @@ const RoomDetailScreen = ({ route }) => {
                                                 <Text>Total: {total},000 VNĐ</Text>
                                             </View>
                                             <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
-                                                <TouchableOpacity onPress={handleCheckOut}>
+                                                <TouchableOpacity onPress={handleShowUp}>
                                                     <Icon name="close-outline" size={24}></Icon>
                                                 </TouchableOpacity>
                                             </View>
@@ -611,27 +598,77 @@ const RoomDetailScreen = ({ route }) => {
                                 })}
                             </ScrollView>
 
-                            <View style={styles.addmorebtn}>
-                                <TouchableOpacity onPress={() => handleAddCustomer()}>
-                                    {hasPermission === true ? (
-                                        <Text> Finish </Text>
-                                    ) : (
+                            {hasPermission === false ? (
+                                <View style={styles.addmorebtn}>
+                                    <TouchableOpacity onPress={() => handleAddCustomer()}>
                                         <Text style={{ color: '#2EC4B6' }}>Add More</Text>
-                                    )}
-                                </TouchableOpacity>
-                            </View>
+                                    </TouchableOpacity>
+                                </View>
+                            ) : (
+                                <View></View>
+                            )}
                         </View>
                     </View>
                 </KeyboardAwareScrollView>
             </View>
-            <View style={{ flex: 1.5, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 1.8, flexDirection: 'row', alignItems: 'center' }}>
                 {checkOutShow === true ? (
-                    <View></View>
+                    <View
+                        style={{
+                            height: '100%',
+                            width: '100%',
+                            borderWidth: 2,
+                            borderColor: '#2EC4B6',
+                            backgroundColor: '#FFF',
+                            borderBottomWidth: 0,
+                            borderTopWidth: 0,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <TouchableOpacity
+                            onPress={() => {
+                                status == 1 ? handleCheckIn() : handleCheckOutSubmit();
+                            }}
+                        >
+                            <View
+                                style={{
+                                    width: 160,
+                                    height: 40,
+                                    backgroundColor: '#3DC5B5',
+                                    borderRadius: 20,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Text style={{ fontSize: 20, fontWeight: '600', color: '#fff' }}>{actionName}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
                 ) : (
                     <Animated.View style={[styles.footer, { opacity: checkOutShow === false ? 1 : 0 }]}>
-                        <TouchableOpacity onPress={handleCheckOut}>
-                            <Footer status={status}></Footer>
-                        </TouchableOpacity>
+                        {hasPermission ? (
+                            <TouchableOpacity
+                                onPress={() => (status == 2 ? handleAddCustomer() : handleCheckInSubmit())}
+                            >
+                                <View>
+                                    <Text
+                                        style={{
+                                            color: '#2EC4B6',
+                                            fontSize: 18,
+                                            fontWeight: '500',
+                                            letterSpacing: 1,
+                                        }}
+                                    >
+                                        Finish
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity onPress={handleShowUp}>
+                                <Footer status={status}></Footer>
+                            </TouchableOpacity>
+                        )}
                     </Animated.View>
                 )}
             </View>

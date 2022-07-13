@@ -19,15 +19,15 @@ function MyTabs() {
                 }}
             />
             <Tab.Screen
-                name="Profile"
-                component={ProfileScreen}
+                name="Auto"
+                component={AutoScreen}
                 options={{
                     tabBarIcon: ({ color }) => <Icon name="login" size={24} color={color}></Icon>,
                 }}
             />
             <Tab.Screen
-                name="Auto"
-                component={AutoScreen}
+                name="Profile"
+                component={ProfileScreen}
                 options={{
                     tabBarIcon: ({ color }) => <Icon name="account" size={24} color={color}></Icon>,
                 }}

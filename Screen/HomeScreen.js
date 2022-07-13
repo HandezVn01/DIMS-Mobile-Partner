@@ -9,27 +9,39 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeItem from '../Components/HomeScreen/HomeItem';
 var { width, height } = Dimensions.get('window');
 export default function HomeScreen() {
-    const isLogged = useSelector((state) => state.auth);
+    const auth = useSelector((state) => state.auth);
+
     return (
         <SafeAreaView>
             <View style={styles.header}>
                 <View>
                     <Text style={styles.header_SayHi}>
-                        Hi Handez <Icon name="hand-wave-outline" size={24} color="rgba(249, 164, 0, 0.74);"></Icon>
+                        Hi {auth.user.userName || ''}
+                        <Icon name="hand-wave-outline" size={24} color="rgba(249, 164, 0, 0.74);"></Icon>
                     </Text>
                 </View>
                 <View>
                     <Text style={styles.header_letgo}>
                         <Text>
-                            Let go to manages your <Text style={styles.header_hotel}>hotel !</Text>{' '}
+                            Let go to manages your <Text style={styles.header_hotel}>hotel !</Text>
                         </Text>
                     </Text>
                 </View>
             </View>
             <View style={styles.inner}>
-                <HomeItem icon="home-city-outline" title="View Status Room" backgroundColor="#2EC4B6"></HomeItem>
-                <HomeItem icon="login" title="Check In Room" backgroundColor="#CCCCEE"></HomeItem>
-                <HomeItem icon="logout" title="Check Out Room" backgroundColor="rgba(244, 137, 137, 0.96)"></HomeItem>
+                <HomeItem
+                    icon="home-city-outline"
+                    title="View Status Room"
+                    backgroundColor="#2EC4B6"
+                    index={1}
+                ></HomeItem>
+                <HomeItem icon="login" title="Check In Room" backgroundColor="#CCCCEE" index={2}></HomeItem>
+                <HomeItem
+                    icon="logout"
+                    title="Check Out Room"
+                    backgroundColor="rgba(244, 137, 137, 0.96)"
+                    index={3}
+                ></HomeItem>
             </View>
         </SafeAreaView>
     );

@@ -3,12 +3,31 @@ import { View, Text, Linking, Image, StyleSheet, TouchableOpacity, Alert } from 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Button, Checkbox, TextInput } from 'react-native-paper';
 import * as AuthApi from '../Api/AuthApi';
-import { useDispatch } from 'react-redux';
-import { dispatchFailed, dispatchFecth, dispatchLogin, dispatchSuccess } from '../redux/actions/authAction';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+    dispatchFailed,
+    dispatchFecth,
+    dispatchLogin,
+    dispatchLogout,
+    dispatchSuccess,
+} from '../redux/actions/authAction';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-export default function LoginScreen() {
+export default function LoginScreen({ route }) {
     const dispatch = useDispatch();
+    const params = route.params;
+    const navigation = useNavigation();
+    const isLogged = useSelector((state) => state.auth.isLogged);
+    if (params) {
+        if (params.logout === true) {
+            dispatch(dispatchLogout());
+        }
+    }
+    useEffect(() => {
+        if (isLogged) {
+            navigation.navigate('Home');
+        }
+    }, [isLogged]);
     const handleLogin = async () => {
         let alertStatus = false;
         let alertMsg = '';
@@ -58,7 +77,6 @@ export default function LoginScreen() {
     const [password, setPassword] = useState('');
     const [eye, setEye] = useState(true);
     const [checked, setChecked] = React.useState(false);
-    const navigation = useNavigation();
 
     return (
         <View style={styles.container}>

@@ -1,17 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, StyleSheet, Image, ScrollView } from 'react-native';
-import { BarCodeScanner } from 'expo-barcode-scanner';
-import Footer from '../Components/Footer';
+import { View, Text, SafeAreaView, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+import GeneralItem from '../Components/ProfileScreen/GeneralItem';
+
 export default function ProfileScreen() {
-    const [datatmp, setDataTmp] = useState('');
-    const handleBarCodeScanned = ({ type, data }) => {
-        if (data !== datatmp) {
-            alert(`Bar code with type ${type} and data ${data} has been scanned!`);
-            setDataTmp(datatmp);
-        }
-    };
     return (
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF' }}>
             <View
                 style={{
                     flex: 3.5,
@@ -49,10 +42,19 @@ export default function ProfileScreen() {
                         <View>
                             <Text style={styles.title}>General</Text>
                         </View>
+                        <GeneralItem icon={'account'} title={'Personal Data'} action={'Person'}></GeneralItem>
+                        <GeneralItem
+                            icon={'room-service-outline'}
+                            title={'Room Service'}
+                            action={'RoomService'}
+                        ></GeneralItem>
                     </View>
                     <View>
                         <Text style={styles.title}>Others</Text>
                     </View>
+                    <GeneralItem icon={'help'} title={'Support'} action={'Help'}></GeneralItem>
+
+                    <GeneralItem icon={'logout'} title={'Log Out'} action={'logout'}></GeneralItem>
                 </ScrollView>
             </View>
         </SafeAreaView>

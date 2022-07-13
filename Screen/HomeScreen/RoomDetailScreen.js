@@ -15,16 +15,19 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
-import Customer from '../Components/RoomScreen/Customer';
+import Customer from '../../Components/RoomScreen/Customer';
 import { Camera } from 'expo-camera';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { Audio } from 'expo-av';
-import Itemlist from '../Components/RoomScreen/CheckOut/Itemlist';
-import Footer from '../Components/RoomScreen/Footer';
-import InputCompunent from '../Components/RoomScreen/CheckInNav/InputCompunent';
+import Itemlist from '../../Components/RoomScreen/CheckOut/Itemlist';
+import Footer from '../../Components/RoomScreen/Footer';
+import InputCompunent from '../../Components/RoomScreen/CheckInNav/InputCompunent';
 import { Checkbox } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import moment from 'moment';
+import * as RoomApi from '../../Api/RoomStatus';
+import NumberFormat from 'react-number-format';
 var { width, height } = Dimensions.get('window');
 const RoomDetailScreen = ({ route }) => {
     const insets = useSafeAreaInsets();
@@ -33,31 +36,33 @@ const RoomDetailScreen = ({ route }) => {
     const [datatmp, setDataTmp] = useState('');
     const [sound, setSound] = React.useState();
     const [checkOutShow, setCheckOutShow] = useState(false);
+
     // Get infomation from params
     const roomName = route.params.roomName;
     const status = route.params.status;
     const roomid = route.params.roomId;
-    //
+    const data = route.params.data;
 
+    // API Get Data
     const checkoutShowRef = useRef(new Animated.Value(0)).current;
     const [extraFee, setExtraFee] = useState(0);
-    const data =
-        status == 2
-            ? {
-                  checkindate: '08-07-2022',
-                  checkoutdate: '09-07-2022',
-                  totalNight: 1,
-                  Type: 'Check In Local',
-                  Createby: 'Handez',
-                  Status: '3',
-                  StatusMsg: 'Đã Trả Trước ',
-                  Paid: 100,
-                  Price: 200,
-              }
-            : {};
-    const roomData = {};
-    const [total, setTotal] = useState(data.Price * data.totalNight - data.Paid);
-    const totalTmp = data.Price * data.totalNight - data.Paid;
+    // const data =
+    //     status == 2
+    //         ? {
+    //               checkindate: '08-07-2022',
+    //               checkoutdate: '09-07-2022',
+    //               totalNight: 1,
+    //               Type: 'Check In Local',
+    //               Createby: 'Handez',
+    //               Status: '3',
+    //               StatusMsg: 'Đã Trả Trước ',
+    //               Paid: 100,
+    //               Price: 200,
+    //           }
+    //         : {};
+    const [total, setTotal] = useState(parseInt(data.totalPrice) - parseInt(data.deposit));
+    console.log(data);
+    const totalTmp = parseInt(data.totalPrice) - parseInt(data.deposit);
     const customerlist = [];
     const [isPayment, setisPayment] = useState(false);
     const [totalNight, setTotalNight] = useState(1);
@@ -121,7 +126,7 @@ const RoomDetailScreen = ({ route }) => {
     const [itemListUse, setItemListUse] = useState(itemList);
     const [actionName, setActionName] = useState(status == 1 ? 'Next' : 'Submit');
     async function playSound() {
-        const { sound } = await Audio.Sound.createAsync(require('../assets/beep.mp3'));
+        const { sound } = await Audio.Sound.createAsync(require('../../assets/beep.mp3'));
         setSound(sound);
 
         await sound.playAsync();
@@ -273,55 +278,84 @@ const RoomDetailScreen = ({ route }) => {
                                 )}
                             </View>
                             <Image
-                                source={require('../assets/Card.png')}
+                                source={require('../../assets/Card.png')}
                                 borderRadius={24}
                                 style={{ height: '100%', width: '100%' }}
                             />
                             <View style={styles.card_content}>
                                 <Text style={styles.card_content_text}>
-                                    CheckIn Date: <Text style={styles.card_data}>{data.checkindate}</Text>
+                                    CheckIn Date:{' '}
+                                    <Text style={styles.card_data}>{moment(data.createDate).format('YYYY-MM-DD')}</Text>
                                 </Text>
                                 <Text style={styles.card_content_text}>
-                                    CheckOut Date: <Text style={styles.card_data}>{data.checkoutdate}</Text>
+                                    CheckOut Date:{' '}
+                                    <Text style={styles.card_data}>{moment(data.endDate).format('YYYY-MM-DD')}</Text>
                                 </Text>
                                 <Text style={styles.card_content_text}>
-                                    Type: <Text style={styles.card_data}>{data.Type}</Text>
+                                    Type: <Text style={styles.card_data}>{data.paymentMethod}</Text>
                                 </Text>
                                 <Text style={styles.card_content_text}>
-                                    Created by: <Text style={styles.card_data}>{data.Createby}</Text>
+                                    Created by: <Text style={styles.card_data}>{data.userFullName}</Text>
                                 </Text>
-                                <Text style={styles.card_content_text}>
-                                    Status:{' '}
-                                    <Text
-                                        style={[
-                                            styles.card_data,
-                                            {
-                                                color:
-                                                    data.Status == 1
-                                                        ? '#D72C36'
-                                                        : data.Status == 2
-                                                        ? '#53A1FD'
-                                                        : '#F9A000',
-                                            },
-                                        ]}
-                                    >
-                                        {data.StatusMsg}
-                                        {data.Status == 3 ? (
-                                            <Text>
-                                                <Text style={{ color: '#53A1FD' }}> {data.Paid},000</Text> VNĐ
+                                <View style={{ overflow: 'scroll', flexWrap: 'wrap' }}>
+                                    <Text style={styles.card_content_text}>
+                                        Status:{' '}
+                                        {data.paymentCondition !== undefined ? (
+                                            <Text
+                                                style={[
+                                                    styles.card_data,
+                                                    {
+                                                        color:
+                                                            data.paymentCondition === true
+                                                                ? '#53A1FD'
+                                                                : data.deposit > 0
+                                                                ? '#F9A000'
+                                                                : '#D72C36',
+                                                    },
+                                                ]}
+                                            >
+                                                {data.paymentCondition === true ? (
+                                                    <Text>Đã Thanh Toán</Text>
+                                                ) : data.deposit < 1 ? (
+                                                    <Text>Chưa Thanh Toán</Text>
+                                                ) : (
+                                                    <Text>
+                                                        Đã Thanh Toán{' '}
+                                                        <Text style={{ color: '#53A1FD' }}>
+                                                            <NumberFormat
+                                                                value={data.deposit * 1000}
+                                                                thousandSeparator={true}
+                                                                displayType={'text'}
+                                                                renderText={(value) => <Text>{value}</Text>}
+                                                            ></NumberFormat>
+                                                        </Text>
+                                                        VNĐ
+                                                    </Text>
+                                                )}
                                             </Text>
                                         ) : (
-                                            ''
+                                            <View></View>
                                         )}
                                     </Text>
-                                </Text>
+                                </View>
                             </View>
                             <View style={styles.card_content_price}>
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Text style={styles.card_content_text}>Price: </Text>
-                                    <Text style={styles.price_number}>{data.Price},000 </Text>
-                                    <Text style={styles.price_currency}>VNĐ / Days</Text>
-                                </View>
+                                {data.totalPrice !== undefined ? (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Text style={styles.card_content_text}>TotalPrice: </Text>
+                                        <Text style={styles.price_number}>
+                                            <NumberFormat
+                                                value={data.totalPrice * 1000}
+                                                thousandSeparator={true}
+                                                displayType={'text'}
+                                                renderText={(value) => <Text>{value}</Text>}
+                                            ></NumberFormat>
+                                        </Text>
+                                        <Text style={styles.price_currency}>VNĐ</Text>
+                                    </View>
+                                ) : (
+                                    <View></View>
+                                )}
                             </View>
                         </View>
                     </View>
@@ -482,7 +516,9 @@ const RoomDetailScreen = ({ route }) => {
                                             }}
                                         >
                                             <View style={{ flex: 3 }}>
-                                                <Text>Check Out </Text>
+                                                <Text style={{ fontSize: 16, fontWeight: '500', color: '#3DC5B5' }}>
+                                                    Check Out{' '}
+                                                </Text>
                                             </View>
                                             <View style={{ flex: 6 }}>
                                                 <Text>Total: {total},000 VNĐ</Text>
@@ -500,6 +536,7 @@ const RoomDetailScreen = ({ route }) => {
                                                         flexDirection: 'row',
                                                         alignItems: 'center',
                                                         justifyContent: 'space-between',
+                                                        marginTop: 10,
                                                     }}
                                                 >
                                                     <Text>Extra Fee:</Text>
@@ -727,9 +764,9 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
     },
     card: {
-        height: 200,
-        width: 330,
-        borderRadius: 24,
+        height: Platform.OS === 'ios' ? 250 : 200,
+        width: Platform.OS === 'ios' ? 412.5 : 330,
+        borderRadius: Platform.OS === 'ios' ? 30 : 24,
         position: 'relative',
         overflow: 'hidden',
     },
@@ -760,6 +797,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '400',
         lineHeight: 24,
+        marginBottom: Platform.OS === 'ios' ? 5 : 0,
         // overflow: 'hidden',
     },
     card_data: {

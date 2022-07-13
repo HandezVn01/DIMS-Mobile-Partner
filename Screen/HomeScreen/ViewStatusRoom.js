@@ -4,20 +4,39 @@ import { Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
-import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../redux/actions/authAction';
-import * as RoomStatusAPI from '../Api/RoomStatus';
+import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
+import * as RoomApi from '../../Api/RoomStatus';
 
 var { width, height } = Dimensions.get('window');
 const ViewStatusRoom = ({ route }) => {
     const title = route.params.title;
     const navigation = useNavigation();
     const dispatch = useDispatch();
-    const handleRoom = ({ roomName, status, roomId }) => {
-        navigation.navigate('RoomDetail', {
-            roomName: roomName,
-            status: status,
-            roomId: roomId,
-        });
+    const handleRoom = async ({ roomName, status, roomId }) => {
+        const go = (data) => {
+            navigation.navigate('RoomDetail', {
+                roomName: roomName,
+                status: status,
+                roomId: roomId,
+                data: data || {},
+            });
+        };
+        if (status === 2) {
+            try {
+                dispatch(dispatchFecth());
+                await RoomApi.getRoomInfo(roomId)
+                    .then((data) => go(data))
+                    .catch((err) => {
+                        console.log(err);
+                        dispatch(dispatchFailed());
+                    });
+                // Get API roomInfo
+
+                dispatch(dispatchSuccess());
+            } catch (error) {}
+        } else {
+            go();
+        }
     };
 
     const [datas, setDatas] = useState(route.params.data);
@@ -61,7 +80,6 @@ const ViewStatusRoom = ({ route }) => {
             }
         };
         abc();
-        console.log(datas);
     } catch (error) {}
 
     return (
@@ -106,7 +124,7 @@ const ViewStatusRoom = ({ route }) => {
                                                             onPress={() =>
                                                                 handleRoom({
                                                                     roomName: data.roomName,
-                                                                    status: data.status,
+                                                                    status: data.allStatus,
                                                                     roomId: data.roomId,
                                                                 })
                                                             }
@@ -120,10 +138,10 @@ const ViewStatusRoom = ({ route }) => {
                                                                         : data.allStatus == 3
                                                                         ? '#E31717'
                                                                         : data.allStatus == 1
-                                                                        ? ''
+                                                                        ? '#000'
                                                                         : data.bookedStatus != null
                                                                         ? '#F9A000'
-                                                                        : ''
+                                                                        : '#000'
                                                                 }
                                                             ></Icon>
                                                             <Text>{data.roomName}</Text>

@@ -10,6 +10,8 @@ const Itemlist = ({ itemName, itemType, itemPrice, handleSum, itemUse }) => {
                 flexDirection: 'row',
                 alignItems: 'center',
                 flex: 1,
+                marginBottom: 5,
+                marginTop: 5,
             }}
         >
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>

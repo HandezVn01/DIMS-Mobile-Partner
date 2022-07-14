@@ -12,6 +12,16 @@ const ViewStatusRoom = ({ route }) => {
     const title = route.params.title;
     const navigation = useNavigation();
     const dispatch = useDispatch();
+    const [datas, setDatas] = useState(route.params.data);
+    let today = new Date();
+    let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    // useEffect(()=>{
+    //     await RoomStatusAPI.GetAllStatus(token, today, 0)
+    //                 .then((data) => {
+    //                     go(data);
+    //                 })
+    //                 .catch((err) => console.log(err));
+    // },[])
     const handleRoom = async ({ roomName, status, roomId }) => {
         const go = (data) => {
             navigation.navigate('RoomDetail', {
@@ -38,8 +48,6 @@ const ViewStatusRoom = ({ route }) => {
             go();
         }
     };
-
-    const [datas, setDatas] = useState(route.params.data);
 
     const removeDulicate = (arr) => {
         const uniqueIds = [];

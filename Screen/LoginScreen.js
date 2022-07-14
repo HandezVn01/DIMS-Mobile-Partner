@@ -20,14 +20,10 @@ export default function LoginScreen({ route }) {
     const isLogged = useSelector((state) => state.auth.isLogged);
     if (params) {
         if (params.logout === true) {
+            console.log('run');
             dispatch(dispatchLogout());
         }
     }
-    useEffect(() => {
-        if (isLogged) {
-            navigation.navigate('Home');
-        }
-    }, [isLogged]);
     const handleLogin = async () => {
         let alertStatus = false;
         let alertMsg = '';

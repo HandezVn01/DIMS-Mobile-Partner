@@ -2,9 +2,11 @@ import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
-
+import { useDispatch } from 'react-redux';
+import { dispatchLogout } from '../../redux/actions/authAction';
 const GeneralItem = ({ icon, title, action }) => {
     const navigation = useNavigation();
+    const dispatch = useDispatch();
     const handleAction = () => {
         if (action !== 'logout') {
             navigation.navigate(action, {
@@ -23,7 +25,7 @@ const GeneralItem = ({ icon, title, action }) => {
             {
                 text: 'OK',
                 onPress: () => {
-                    navigation.navigate('Login1');
+                    dispatch(dispatchLogout());
                 },
             },
         ]);

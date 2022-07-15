@@ -15,13 +15,25 @@ const ViewStatusRoom = ({ route }) => {
     const [datas, setDatas] = useState(route.params.data);
     let today = new Date();
     let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-    // useEffect(()=>{
-    //     await RoomStatusAPI.GetAllStatus(token, today, 0)
-    //                 .then((data) => {
-    //                     go(data);
-    //                 })
-    //                 .catch((err) => console.log(err));
-    // },[])
+    const refreshData = async () => {
+        try {
+            await RoomApi.GetAllStatus(today, 0)
+                .then((data) => {
+                    setDatas(data);
+                })
+                .catch((err) => console.log(err));
+        } catch (error) {}
+    };
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            if (route.params.index === 1) {
+                refreshData();
+            }
+        });
+        return () => {
+            unsubscribe;
+        };
+    }, []);
     const handleRoom = async ({ roomName, status, roomId }) => {
         const go = (data) => {
             navigation.navigate('RoomDetail', {
@@ -64,7 +76,13 @@ const ViewStatusRoom = ({ route }) => {
         });
         return unique;
     };
-
+    const handleCleanRoom = async (roomId) => {
+        dispatch(dispatchFecth());
+        await RoomApi.cleanRoom(roomId)
+            .then((result) => refreshData())
+            .catch((err) => console.log(err))
+            .finally(() => dispatch(dispatchSuccess()));
+    };
     let floorlist = [];
     let categoryList = [];
     try {
@@ -143,15 +161,7 @@ const ViewStatusRoom = ({ route }) => {
                                                                             {
                                                                                 text: 'OK',
                                                                                 onPress: () => {
-                                                                                    dispatch(dispatchFecth());
-                                                                                    RoomApi.cleanRoom(data.roomId)
-                                                                                        .then((result) =>
-                                                                                            console.log(result),
-                                                                                        )
-                                                                                        .catch((err) =>
-                                                                                            console.log(err),
-                                                                                        );
-                                                                                    dispatch(dispatchSuccess());
+                                                                                    handleCleanRoom(data.roomId);
                                                                                 },
                                                                             },
                                                                         ],
@@ -192,13 +202,6 @@ const ViewStatusRoom = ({ route }) => {
                         </View>
                     );
                 })}
-
-                <TouchableOpacity onPress={() => handleRoom({ roomName: '101', status: '1' })}>
-                    <Text>101</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleRoom({ roomName: '102', status: '2' })}>
-                    <Text>102</Text>
-                </TouchableOpacity>
             </View>
         </View>
     );

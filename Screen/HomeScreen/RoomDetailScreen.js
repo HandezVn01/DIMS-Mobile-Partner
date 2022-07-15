@@ -136,7 +136,7 @@ const RoomDetailScreen = ({ route }) => {
             quantity: '0',
         },
     ];
-    const [list, setList] = useState([]);
+    const [list, setList] = useState(data.lsCustomer || []);
     const [list2, setList2] = useState([]);
     const [itemListUse, setItemListUse] = useState(itemList);
     const [actionName, setActionName] = useState(status == 1 ? 'Next' : 'Submit');
@@ -158,11 +158,10 @@ const RoomDetailScreen = ({ route }) => {
                 userBirthday: value[3],
                 userAddress: value[5],
             };
-            const myJSON = JSON.stringify(new_data);
-            setList([...list, myJSON]);
+
+            setList([...list, new_data]);
             setList2([...list2, `${value[5]}|${value[3]}|${value[0]}|${value[2]}|${value[4]}`]);
             playSound();
-            console.log(list2);
         }
     };
     const handleCheckIn = () => {
@@ -679,12 +678,11 @@ const RoomDetailScreen = ({ route }) => {
                             </View>
                             <ScrollView style={{ maxHeight: 200, width: '80%', marginTop: 10, marginBottom: 5 }}>
                                 {list.map((customer, index) => {
-                                    const parse = JSON.parse(customer);
                                     return (
                                         <Customer
                                             index={index}
-                                            name={parse.userName}
-                                            cccd={parse.userIdCard}
+                                            name={customer.userName}
+                                            cccd={customer.userIdCard}
                                             key={index}
                                             removeitem={() => removeItemHandle({ indexList: index })}
                                         ></Customer>

@@ -29,7 +29,7 @@ const HomeItem = ({ title, icon, backgroundColor, index }) => {
             };
             dispatch(dispatchFecth());
             if (index == 1) {
-                await RoomStatusAPI.GetAllStatus(token, today, 0)
+                await RoomStatusAPI.GetAllStatus(today, 0)
                     .then((data) => {
                         go(data);
                     })

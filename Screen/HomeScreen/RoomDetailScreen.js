@@ -44,7 +44,7 @@ const RoomDetailScreen = ({ route }) => {
     const roomName = route.params.roomName;
     const status = route.params.status;
     const roomid = route.params.roomId;
-    const data = route.params.data;
+    const [data, setData] = useState(route.params.data);
     // Create State for Check In
     const [isPayment, setisPayment] = useState(false);
     const [totalNight, setTotalNight] = useState(1);
@@ -70,7 +70,16 @@ const RoomDetailScreen = ({ route }) => {
     //         : {};
     const [total, setTotal] = useState(parseInt(data.totalPrice) - parseInt(data.deposit));
     const totalTmp = parseInt(data.totalPrice) - parseInt(data.deposit);
-
+    const checkInSuccess = async () => {
+        await RoomApi.getRoomInfo(roomid)
+            .then((result) => {
+                setData(result);
+                console.log(result);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    };
     var itemList = [
         {
             itemName: ' String',
@@ -128,6 +137,7 @@ const RoomDetailScreen = ({ route }) => {
         },
     ];
     const [list, setList] = useState([]);
+    const [list2, setList2] = useState([]);
     const [itemListUse, setItemListUse] = useState(itemList);
     const [actionName, setActionName] = useState(status == 1 ? 'Next' : 'Submit');
     async function playSound() {
@@ -148,9 +158,11 @@ const RoomDetailScreen = ({ route }) => {
                 userBirthday: value[3],
                 userAddress: value[5],
             };
-            setList([...list, new_data]);
+            const myJSON = JSON.stringify(new_data);
+            setList([...list, myJSON]);
+            setList2([...list2, `${value[5]}|${value[3]}|${value[0]}|${value[2]}|${value[4]}`]);
             playSound();
-            console.log(new_data);
+            console.log(list2);
         }
     };
     const handleCheckIn = () => {
@@ -193,15 +205,23 @@ const RoomDetailScreen = ({ route }) => {
         setHasPermission(!hasPermission); // Camera Off
         console.log(list);
         dispatch(dispatchFecth());
-        await RoomApi.CheckInRoom(roomid, 0, totalNight, userEmail, totalPrice, isPayment, deposit, list)
-            .then((result) => console.log(result))
-            .catch((errors) => console.log(errors));
+        await RoomApi.CheckInRoom(roomid, 0, totalNight, userEmail, totalPrice, isPayment, deposit, list2)
+            .then((result) => {
+                Alert.alert('Success', 'Checkin Success');
+                checkInSuccess();
+            })
+            .catch((errors) => {
+                console.log(errors);
+                console.log(errors.response);
+            });
         dispatch(dispatchSuccess());
     };
     const handleCheckOutSubmit = async () => {
         await RoomApi.CheckOut(0, data.bookingId)
-            .then((result) => console.log(result))
-            .catch((err) => console.log(err));
+            .then((result) => {
+                Alert.alert('Success', 'Đã Check Out Thành Công!');
+            })
+            .catch((err) => Alert.alert('Error', 'Xin Lỗi Server đang lỗi !'));
         setCheckOutShow(!checkOutShow);
     };
     const handleShowUp = () => {
@@ -659,11 +679,12 @@ const RoomDetailScreen = ({ route }) => {
                             </View>
                             <ScrollView style={{ maxHeight: 200, width: '80%', marginTop: 10, marginBottom: 5 }}>
                                 {list.map((customer, index) => {
+                                    const parse = JSON.parse(customer);
                                     return (
                                         <Customer
                                             index={index}
-                                            name={customer.userName}
-                                            cccd={customer.userIdCard}
+                                            name={parse.userName}
+                                            cccd={parse.userIdCard}
                                             key={index}
                                             removeitem={() => removeItemHandle({ indexList: index })}
                                         ></Customer>

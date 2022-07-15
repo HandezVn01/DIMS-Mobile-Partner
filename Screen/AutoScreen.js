@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, SafeAreaView, StyleSheet } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import * as RoomApi from '../Api/RoomApi';
+import { useDispatch } from 'react-redux';
+import { dispatchFecth, dispatchSuccess } from '../redux/actions/authAction';
 export default function AutoScreen() {
+    const dispatch = useDispatch();
     const [datatmp, setDataTmp] = useState('');
     const handleBarCodeScanned = ({ type, data }) => {
         if (data !== datatmp) {
-            alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+            alert(`${data}`);
+            dispatch(dispatchFecth());
+            RoomApi.CheckInAuto(0, data)
+                .then((result) => console.log(result))
+                .catch((err) => console.log(err));
             setDataTmp(datatmp);
+            dispatch(dispatchSuccess());
         }
     };
     return (

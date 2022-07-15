@@ -13,6 +13,32 @@ gettoken().then((result) => {
 let today = new Date();
 let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
 
+export const cleanRoom = async (roomId) => {
+    const res = await axios.put(
+        `api/HostManage/Update-Clean-Status?roomID=${roomId}`,
+        {},
+        {
+            headers: { Authorization: `Bearer ${token}` },
+        },
+    );
+    return res;
+};
+
+export const CheckInAuto = async (hotelId, qrContent) => {
+    const res = await axios.post(
+        `api/QrsManage/Check-in-Main-Qr`,
+        {
+            hotelId: hotelId,
+            qrContent: qrContent,
+        },
+        {
+            headers: { Authorization: `Bearer ${token}` },
+        },
+    );
+
+    return res.data;
+};
+
 export const CheckOut = async (hotelId, bookingId) => {
     const res = await axios.put(
         `api/HostManage/Checkout-Local?hotelId=${hotelId}&bookingID=${bookingId}`,
@@ -52,7 +78,7 @@ export const CheckInRoom = async (
                     roomId: roomId,
                 },
             ],
-            inboundUsers: customerlist,
+            inboundUsersUnknow: customerlist,
         },
         {
             headers: { Authorization: `Bearer ${token}` },

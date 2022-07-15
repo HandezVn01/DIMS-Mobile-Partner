@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -129,13 +129,41 @@ const ViewStatusRoom = ({ route }) => {
                                                                 paddingLeft: 20,
                                                                 alignItems: 'center',
                                                             }}
-                                                            onPress={() =>
-                                                                handleRoom({
-                                                                    roomName: data.roomName,
-                                                                    status: data.allStatus,
-                                                                    roomId: data.roomId,
-                                                                })
-                                                            }
+                                                            onPress={() => {
+                                                                if (data.allStatus == 3) {
+                                                                    Alert.alert(
+                                                                        `Confirm`,
+                                                                        `Bạn đã dọn xong phòng ${data.roomName} ?`,
+                                                                        [
+                                                                            {
+                                                                                text: 'Cancel',
+
+                                                                                style: 'cancel',
+                                                                            },
+                                                                            {
+                                                                                text: 'OK',
+                                                                                onPress: () => {
+                                                                                    dispatch(dispatchFecth());
+                                                                                    RoomApi.cleanRoom(data.roomId)
+                                                                                        .then((result) =>
+                                                                                            console.log(result),
+                                                                                        )
+                                                                                        .catch((err) =>
+                                                                                            console.log(err),
+                                                                                        );
+                                                                                    dispatch(dispatchSuccess());
+                                                                                },
+                                                                            },
+                                                                        ],
+                                                                    );
+                                                                } else {
+                                                                    handleRoom({
+                                                                        roomName: data.roomName,
+                                                                        status: data.allStatus,
+                                                                        roomId: data.roomId,
+                                                                    });
+                                                                }
+                                                            }}
                                                         >
                                                             <Icon
                                                                 name="home"

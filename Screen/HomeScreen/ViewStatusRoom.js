@@ -5,7 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
-import * as RoomApi from '../../Api/RoomStatus';
+import * as RoomApi from '../../Api/RoomApi';
 
 var { width, height } = Dimensions.get('window');
 const ViewStatusRoom = ({ route }) => {

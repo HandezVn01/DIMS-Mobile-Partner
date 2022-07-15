@@ -26,10 +26,13 @@ import { Checkbox } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import moment from 'moment';
-import * as RoomApi from '../../Api/RoomStatus';
+import * as RoomApi from '../../Api/RoomApi';
 import NumberFormat from 'react-number-format';
+import { useDispatch } from 'react-redux';
+import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
 var { width, height } = Dimensions.get('window');
 const RoomDetailScreen = ({ route }) => {
+    const dispatch = useDispatch();
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
     const [hasPermission, setHasPermission] = useState(false);
@@ -42,7 +45,12 @@ const RoomDetailScreen = ({ route }) => {
     const status = route.params.status;
     const roomid = route.params.roomId;
     const data = route.params.data;
-
+    // Create State for Check In
+    const [isPayment, setisPayment] = useState(false);
+    const [totalNight, setTotalNight] = useState(1);
+    const [totalPrice, setTotalPrice] = useState(100);
+    const [deposit, setDeposit] = useState(0);
+    const [userEmail, setUserEmail] = useState('');
     // API Get Data
     const checkoutShowRef = useRef(new Animated.Value(0)).current;
     const [extraFee, setExtraFee] = useState(0);
@@ -61,11 +69,8 @@ const RoomDetailScreen = ({ route }) => {
     //           }
     //         : {};
     const [total, setTotal] = useState(parseInt(data.totalPrice) - parseInt(data.deposit));
-    console.log(data);
     const totalTmp = parseInt(data.totalPrice) - parseInt(data.deposit);
-    const customerlist = [];
-    const [isPayment, setisPayment] = useState(false);
-    const [totalNight, setTotalNight] = useState(1);
+
     var itemList = [
         {
             itemName: ' String',
@@ -122,7 +127,7 @@ const RoomDetailScreen = ({ route }) => {
             quantity: '0',
         },
     ];
-    const [list, setList] = useState(customerlist);
+    const [list, setList] = useState([]);
     const [itemListUse, setItemListUse] = useState(itemList);
     const [actionName, setActionName] = useState(status == 1 ? 'Next' : 'Submit');
     async function playSound() {
@@ -135,41 +140,68 @@ const RoomDetailScreen = ({ route }) => {
         if (data !== datatmp) {
             alert(`Bar code with type ${type} and data ${data} has been scanned!`);
             setDataTmp(data);
-            const check = data.indexOf('|');
-            if (check != -1) {
-                const value = data.split('|');
-                const new_data = {
-                    address: value[5],
-                    birthday: value[3],
-                    gen: value[4],
-                    number: value[0],
-                    name: value[2],
-                };
-                setList([...list, new_data]);
-            } else {
-                const values = data.split('\n');
-                const new_data = {
-                    address: values[4],
-                    birthday: values[2],
-                    gen: '',
-                    number: values[0],
-                    name: values[1],
-                };
-                setList([...list, new_data]);
-            }
-
+            const value = data.split('|');
+            const new_data = {
+                userName: value[2],
+                userSex: value[4],
+                userIdCard: value[0],
+                userBirthday: value[3],
+                userAddress: value[5],
+            };
+            setList([...list, new_data]);
             playSound();
+            console.log(new_data);
         }
     };
     const handleCheckIn = () => {
-        setActionName('Next');
-        setHasPermission(!hasPermission);
-        setCheckOutShow(!checkOutShow);
+        let alertStatus = false;
+        let alertMsg = '';
+        let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+        if (userEmail.length < 1) {
+            alertStatus = true;
+            alertMsg = alertMsg + 'Email is Empty ! \n Please input Email for customer receive key qr code ! \n';
+        }
+        if (reg.test(userEmail) === false) {
+            alertStatus = true;
+            alertMsg = alertMsg + 'Email is not correct \n';
+        }
+        if (alertStatus) {
+            Alert.alert('Warning', alertMsg);
+            console.log('alert');
+        } else {
+            // setActionName('Next');
+            dispatch(dispatchFecth());
+            const check = RoomApi.CheckRoomDateBooking(roomid, 0, totalNight);
+            check
+                .then((result) => {
+                    dispatch(dispatchSuccess());
+                    setHasPermission(!hasPermission); // Camera On
+                    setCheckOutShow(!checkOutShow); // Popup Show off
+                })
+                .catch((err) => {
+                    dispatch(dispatchFailed());
+                    Alert.alert('Error', err);
+                });
+        }
+        console.log('Total PRice', totalPrice);
+        console.log('Total night', totalNight);
+        console.log('Email', userEmail);
+        console.log('isPayment', isPayment);
+        console.log('Deposit', deposit);
     };
-    const handleCheckInSubmit = () => {
-        setHasPermission(!hasPermission);
+    const handleCheckInSubmit = async () => {
+        setHasPermission(!hasPermission); // Camera Off
+        console.log(list);
+        dispatch(dispatchFecth());
+        await RoomApi.CheckInRoom(roomid, 0, totalNight, userEmail, totalPrice, isPayment, deposit, list)
+            .then((result) => console.log(result))
+            .catch((errors) => console.log(errors));
+        dispatch(dispatchSuccess());
     };
-    const handleCheckOutSubmit = () => {
+    const handleCheckOutSubmit = async () => {
+        await RoomApi.CheckOut(0, data.bookingId)
+            .then((result) => console.log(result))
+            .catch((err) => console.log(err));
         setCheckOutShow(!checkOutShow);
     };
     const handleShowUp = () => {
@@ -306,7 +338,7 @@ const RoomDetailScreen = ({ route }) => {
                                                     styles.card_data,
                                                     {
                                                         color:
-                                                            data.paymentCondition === true
+                                                            data.paymentCondition === 'True'
                                                                 ? '#53A1FD'
                                                                 : data.deposit > 0
                                                                 ? '#F9A000'
@@ -314,7 +346,7 @@ const RoomDetailScreen = ({ route }) => {
                                                     },
                                                 ]}
                                             >
-                                                {data.paymentCondition === true ? (
+                                                {data.paymentCondition === 'True' ? (
                                                     <Text>Đã Thanh Toán</Text>
                                                 ) : data.deposit < 1 ? (
                                                     <Text>Chưa Thanh Toán</Text>
@@ -475,11 +507,13 @@ const RoomDetailScreen = ({ route }) => {
                                                     placeholder={'Example : 200'}
                                                     sub={'VNĐ'}
                                                     keyboardType="numeric"
+                                                    setInput={setTotalPrice}
                                                 ></InputCompunent>
                                                 <InputCompunent
                                                     title={'Email:'}
                                                     placeholder={'Email of customer'}
                                                     sub={''}
+                                                    setInput={setUserEmail}
                                                 ></InputCompunent>
                                                 <View
                                                     style={{
@@ -498,6 +532,8 @@ const RoomDetailScreen = ({ route }) => {
                                                     title={'Đã Nhận'}
                                                     placeholder={'Số Tiền Đã Nhận'}
                                                     sub={'VNĐ'}
+                                                    setInput={setDeposit}
+                                                    keyboardType={'numeric'}
                                                 ></InputCompunent>
                                             </ScrollView>
                                         </View>
@@ -626,8 +662,8 @@ const RoomDetailScreen = ({ route }) => {
                                     return (
                                         <Customer
                                             index={index}
-                                            name={customer.name}
-                                            cccd={customer.number}
+                                            name={customer.userName}
+                                            cccd={customer.userIdCard}
                                             key={index}
                                             removeitem={() => removeItemHandle({ indexList: index })}
                                         ></Customer>

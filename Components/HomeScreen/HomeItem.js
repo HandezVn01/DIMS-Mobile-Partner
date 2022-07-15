@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch, useSelector } from 'react-redux';
 import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
-import * as RoomStatusAPI from '../../Api/RoomStatus';
+import * as RoomStatusAPI from '../../Api/RoomApi';
 const HomeItem = ({ title, icon, backgroundColor, index }) => {
     const navigation = useNavigation();
     const [token, setToken] = useState('');

@@ -43,3 +43,19 @@ export const dispatchFailed = () => {
         type: ACTIONS.FAILED,
     };
 };
+export const dispatchFetchMenu = () => {
+    return {
+        type: ACTIONS.FETCH_MENU,
+    };
+};
+export const dispatchSuccessMenu = (payload) => {
+    return {
+        type: ACTIONS.SUCCESS_MENU,
+        payload,
+    };
+};
+export const dispatchFailMenu = () => {
+    return {
+        type: ACTIONS.FAILED_MENU,
+    };
+};

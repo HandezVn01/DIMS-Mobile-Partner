@@ -1,17 +1,17 @@
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-const Customer = ({ index, name, cccd, removeitem }) => {
+const ItemUsed = ({ index, name, quantity, removeitem, price }) => {
     return (
         <View style={styles.customer} key={index}>
             <View style={{ width: '10%', alignItems: 'center' }}>
-                <Text>{index + 1}</Text>
+                <Text>{quantity}</Text>
             </View>
-            <View style={{ width: '50%', overflow: 'scroll' }}>
+            <View style={{ width: '60%', overflow: 'scroll' }}>
                 <Text>{name}</Text>
             </View>
             <View>
-                <Text>{cccd}</Text>
+                <Text>Price : {price}k </Text>
             </View>
             <View style={{ right: -5, position: 'absolute' }}>
                 <TouchableOpacity onPress={removeitem}>
@@ -33,4 +33,4 @@ const styles = StyleSheet.create({
         width: '100%',
     },
 });
-export default Customer;
+export default ItemUsed;

@@ -7,10 +7,28 @@ import { Dimensions } from 'react-native';
 import Footer from '../Components/Footer';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import HomeItem from '../Components/HomeScreen/HomeItem';
+import * as ServiceApi from '../Api/ServicesApi';
+import { dispatchFailMenu, dispatchFetchMenu, dispatchSuccessMenu } from '../redux/actions/authAction';
+
 var { width, height } = Dimensions.get('window');
 export default function HomeScreen() {
+    const dispatch = useDispatch();
+    const hotelid = 0;
+    useEffect(() => {
+        const getServiceHotel = async () => {
+            dispatch(dispatchFetchMenu());
+            return await ServiceApi.getMenuList(hotelid)
+                .then((result) => {
+                    dispatch(dispatchSuccessMenu(result));
+                })
+                .catch((err) => dispatch(dispatchFailMenu()));
+        };
+        getServiceHotel();
+        return () => {
+            console.log('This will be logged on unmount');
+        };
+    }, [hotelid]);
     const auth = useSelector((state) => state.auth);
-
     return (
         <SafeAreaView>
             <View style={styles.header}>

@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
 import * as RoomStatusAPI from '../../Api/RoomApi';
 const HomeItem = ({ title, icon, backgroundColor, index }) => {
+    const hotelId = 0;
     const navigation = useNavigation();
     const [token, setToken] = useState('');
     const dispatch = useDispatch();
@@ -29,21 +30,21 @@ const HomeItem = ({ title, icon, backgroundColor, index }) => {
             };
             dispatch(dispatchFecth());
             if (index == 1) {
-                await RoomStatusAPI.GetAllStatus(today, 0)
+                await RoomStatusAPI.GetAllStatus(hotelId)
                     .then((data) => {
                         go(data);
                     })
                     .catch((err) => console.log(err));
             }
             if (index == 2) {
-                await RoomStatusAPI.GetStatusSearch(token, today, 0, 1)
+                await RoomStatusAPI.GetStatusSearch(hotelId, 1)
                     .then((data) => {
                         go(data);
                     })
                     .catch((err) => console.log(err));
             }
             if (index == 3) {
-                await RoomStatusAPI.GetStatusCheckOut(token, today, 0)
+                await RoomStatusAPI.GetStatusCheckOut(hotelId)
                     .then((data) => {
                         go(data);
                     })

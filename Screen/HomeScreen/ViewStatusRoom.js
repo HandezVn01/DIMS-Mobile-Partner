@@ -6,18 +6,21 @@ import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
 import * as RoomApi from '../../Api/RoomApi';
-
+import { TextInput } from 'react-native-paper';
+import { Picker } from '@react-native-picker/picker';
 var { width, height } = Dimensions.get('window');
 const ViewStatusRoom = ({ route }) => {
+    const hotelid = 0;
     const title = route.params.title;
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const [datas, setDatas] = useState(route.params.data);
     let today = new Date();
     let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+    const [totalNight, setTotalNight] = useState(1);
     const refreshData = async () => {
         try {
-            await RoomApi.GetAllStatus(today, 0)
+            await RoomApi.GetAllStatus(hotelid)
                 .then((data) => {
                     setDatas(data);
                 })
@@ -35,26 +38,30 @@ const ViewStatusRoom = ({ route }) => {
         };
     }, []);
     const handleRoom = async ({ roomName, status, roomId }) => {
-        const go = (data) => {
+        const go = (data, usedItem) => {
             navigation.navigate('RoomDetail', {
                 roomName: roomName,
                 status: status,
                 roomId: roomId,
                 data: data || {},
+                usedItem: usedItem || [],
             });
         };
         if (status === 2) {
             try {
                 dispatch(dispatchFecth());
                 await RoomApi.getRoomInfo(roomId)
-                    .then((data) => go(data))
+                    .then((data) => {
+                        RoomApi.getUsedMenu(data.bookingDetailId)
+                            .then((result) => go(data, result))
+                            .catch((error) => dispatch(dispatchFailed()));
+                    })
                     .catch((err) => {
                         console.log(err);
                         dispatch(dispatchFailed());
                     });
-                // Get API roomInfo
-
                 dispatch(dispatchSuccess());
+                // Get API roomInfo
             } catch (error) {}
         } else {
             go();
@@ -83,10 +90,11 @@ const ViewStatusRoom = ({ route }) => {
             .catch((err) => console.log(err))
             .finally(() => dispatch(dispatchSuccess()));
     };
+    const [filterFloor, setFilterFloor] = useState(true);
     let floorlist = [];
     let categoryList = [];
     try {
-        const abc = () => {
+        const filterRoom = () => {
             if (datas.length > 0) {
                 datas.map((data) => {
                     floorlist.push({
@@ -105,9 +113,21 @@ const ViewStatusRoom = ({ route }) => {
                 });
             }
         };
-        abc();
+        filterRoom();
     } catch (error) {}
-
+    const handleSearch = () => {
+        dispatch(dispatchFecth());
+        RoomApi.GetStatusSearch(hotelid, totalNight)
+            .then((result) => setDatas(result))
+            .catch((err) => console.log(err.respones))
+            .finally(() => dispatch(dispatchSuccess()));
+    };
+    const handleFilterFloor = () => {
+        setFilterFloor(true);
+    };
+    const handleFilterCategory = () => {
+        setFilterFloor(false);
+    };
     return (
         <View style={{ flex: 1, marginTop: 20 }}>
             <View style={styles.header}>
@@ -119,89 +139,228 @@ const ViewStatusRoom = ({ route }) => {
                 <Text style={styles.header_title}>{title}</Text>
             </View>
             <View style={styles.container}>
-                {floorlist.map((floor, index) => {
-                    return (
-                        <View style={{ height: 100 }} key={index}>
-                            <ScrollView horizontal={true}>
-                                <View style={{ padding: 10 }}>
-                                    <View>
-                                        <Text style={{ fontSize: 16, fontWeight: '700', paddingLeft: 15 }}>
-                                            Lầu {floor.floor + 1}
-                                        </Text>
-                                    </View>
-                                    <View
-                                        style={{
-                                            flexDirection: 'row',
-                                            paddingRight: 20,
-                                            paddingLeft: 20,
-                                            paddingTop: 5,
-                                        }}
-                                    >
-                                        {datas.map((data, index) => {
-                                            if (data.floor === floor.floor) {
-                                                return (
-                                                    <View key={data + index}>
-                                                        <TouchableOpacity
-                                                            style={{
-                                                                paddingRight: 20,
-                                                                paddingLeft: 20,
-                                                                alignItems: 'center',
-                                                            }}
-                                                            onPress={() => {
-                                                                if (data.allStatus == 3) {
-                                                                    Alert.alert(
-                                                                        `Confirm`,
-                                                                        `Bạn đã dọn xong phòng ${data.roomName} ?`,
-                                                                        [
-                                                                            {
-                                                                                text: 'Cancel',
+                <ScrollView>
+                    {(filterFloor ? floorlist : categoryList).map((floor, index) => {
+                        return (
+                            <View style={{ height: 100 }} key={index}>
+                                <ScrollView horizontal={true}>
+                                    <View style={{ padding: 10 }}>
+                                        <View>
+                                            <Text style={{ fontSize: 16, fontWeight: '700', paddingLeft: 15 }}>
+                                                {filterFloor ? `Lầu${floor.floor + 1} ` : floor.categoryName}
+                                            </Text>
+                                        </View>
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                paddingRight: 20,
+                                                paddingLeft: 20,
+                                                paddingTop: 5,
+                                            }}
+                                        >
+                                            {datas.map((data, index) => {
+                                                if (
+                                                    filterFloor
+                                                        ? data.floor === floor.floor
+                                                        : data.categoryId === floor.id
+                                                ) {
+                                                    return (
+                                                        <View key={data + index}>
+                                                            <TouchableOpacity
+                                                                style={{
+                                                                    paddingRight: 20,
+                                                                    paddingLeft: 20,
+                                                                    alignItems: 'center',
+                                                                }}
+                                                                onPress={() => {
+                                                                    if (data.allStatus == 3) {
+                                                                        Alert.alert(
+                                                                            `Confirm`,
+                                                                            `Bạn đã dọn xong phòng ${data.roomName} ?`,
+                                                                            [
+                                                                                {
+                                                                                    text: 'Cancel',
 
-                                                                                style: 'cancel',
-                                                                            },
-                                                                            {
-                                                                                text: 'OK',
-                                                                                onPress: () => {
-                                                                                    handleCleanRoom(data.roomId);
+                                                                                    style: 'cancel',
                                                                                 },
-                                                                            },
-                                                                        ],
-                                                                    );
-                                                                } else {
-                                                                    handleRoom({
-                                                                        roomName: data.roomName,
-                                                                        status: data.allStatus,
-                                                                        roomId: data.roomId,
-                                                                    });
-                                                                }
-                                                            }}
-                                                        >
-                                                            <Icon
-                                                                name="home"
-                                                                size={24}
-                                                                color={
-                                                                    data.allStatus == 2
-                                                                        ? '#3DC5B5'
-                                                                        : data.allStatus == 3
-                                                                        ? '#E31717'
-                                                                        : data.allStatus == 1
-                                                                        ? '#000'
-                                                                        : data.bookedStatus != null
-                                                                        ? '#F9A000'
-                                                                        : '#000'
-                                                                }
-                                                            ></Icon>
-                                                            <Text>{data.roomName}</Text>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                );
-                                            }
-                                        })}
+                                                                                {
+                                                                                    text: 'OK',
+                                                                                    onPress: () => {
+                                                                                        handleCleanRoom(data.roomId);
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        );
+                                                                    } else {
+                                                                        handleRoom({
+                                                                            roomName: data.roomName,
+                                                                            status: data.allStatus,
+                                                                            roomId: data.roomId,
+                                                                        });
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <Icon
+                                                                    name="home"
+                                                                    size={24}
+                                                                    color={
+                                                                        data.allStatus == 2
+                                                                            ? '#3DC5B5'
+                                                                            : data.allStatus == 3
+                                                                            ? '#E31717'
+                                                                            : data.allStatus == 1
+                                                                            ? '#000'
+                                                                            : data.bookedStatus != null
+                                                                            ? '#F9A000'
+                                                                            : '#000'
+                                                                    }
+                                                                ></Icon>
+                                                                <Text>{data.roomName}</Text>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    );
+                                                }
+                                            })}
+                                        </View>
                                     </View>
-                                </View>
-                            </ScrollView>
+                                </ScrollView>
+                            </View>
+                        );
+                    })}
+                </ScrollView>
+                {route.params.index === 2 ? (
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-around',
+                            alignItems: 'center',
+                            paddingBottom: 5,
+                            paddingTop: 5,
+                        }}
+                    >
+                        <TouchableOpacity onPress={handleFilterFloor}>
+                            <View
+                                style={{
+                                    height: 36,
+                                    width: 160,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: '#3DC5B5',
+                                    borderRadius: 24,
+                                }}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: '600' }}>Lọc theo lầu</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleFilterCategory}>
+                            <View
+                                style={{
+                                    height: 36,
+                                    width: 160,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: 'orange',
+                                    borderRadius: 24,
+                                }}
+                            >
+                                <Text>Lọc theo loại phòng</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <></>
+                )}
+            </View>
+            <View style={styles.footer}>
+                {route.params.index === 2 ? (
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            height: '100%',
+                            width: '100%',
+                            justifyContent: 'space-around',
+                            alignItems: 'center',
+                        }}
+                    >
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Text>Total Night:</Text>
+                            <Picker
+                                style={{ width: 100 }}
+                                selectedValue={totalNight}
+                                onValueChange={(e) => setTotalNight(e)}
+                            >
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((element) => {
+                                    return (
+                                        <Picker.Item
+                                            label={`${element} Đêm`}
+                                            value={element}
+                                            key={element}
+                                        ></Picker.Item>
+                                    );
+                                })}
+                            </Picker>
                         </View>
-                    );
-                })}
+                        <TouchableOpacity onPress={handleSearch}>
+                            <View
+                                style={{
+                                    height: 36,
+                                    width: 160,
+                                    borderRadius: 24,
+                                    backgroundColor: '#3DC5B5',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>Search</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                ) : route.params.index === 1 ? (
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-around',
+                            alignItems: 'center',
+                            height: '100%',
+                        }}
+                    >
+                        <TouchableOpacity onPress={handleFilterFloor}>
+                            <View
+                                style={{
+                                    height: 36,
+                                    width: 160,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: '#3DC5B5',
+                                    borderRadius: 24,
+                                }}
+                            >
+                                <Text style={{ color: '#fff', fontWeight: '600' }}>Lọc theo lầu</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleFilterCategory}>
+                            <View
+                                style={{
+                                    height: 36,
+                                    width: 160,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: 'orange',
+                                    borderRadius: 24,
+                                }}
+                            >
+                                <Text>Lọc theo loại phòng</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <></>
+                )}
             </View>
         </View>
     );
@@ -217,7 +376,12 @@ const styles = StyleSheet.create({
         marginLeft: 15,
     },
     container: {
-        flex: 17,
+        flex: 15,
+    },
+    footer: {
+        flex: 2,
+        borderTopColor: '#3DC5B5',
+        borderTopWidth: 1,
     },
     back: {
         height: 42,

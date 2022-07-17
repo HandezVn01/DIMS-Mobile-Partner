@@ -1,17 +1,19 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React from 'react';
 
-const Item = ({ title, price }) => {
+const Item = ({ title, price, handle }) => {
     return (
-        <View style={styles.itemRow}>
-            <View style={styles.itemColRight}>
-                <Text>{title}</Text>
-            </View>
+        <TouchableOpacity onPress={handle}>
+            <View style={styles.itemRow}>
+                <View style={styles.itemColRight}>
+                    <Text>{title}</Text>
+                </View>
 
-            <View style={styles.itemCol}>
-                <Text>{price}.000 VNĐ</Text>
+                <View style={styles.itemCol}>
+                    <Text>{price}.000 VNĐ</Text>
+                </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 const styles = StyleSheet.create({

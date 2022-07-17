@@ -2,7 +2,7 @@ import { View, Text, TextInput } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const Itemlist = ({ itemName, itemType, itemPrice, handleSum, itemUse }) => {
-    const iconName = itemType === 'water' ? 'bottle-soda' : 'noodles';
+    const iconName = itemType === 'WATER' ? 'bottle-soda-classic' : itemType === 'FOOD' ? 'noodles' : 'room-service';
 
     return (
         <View
@@ -12,17 +12,18 @@ const Itemlist = ({ itemName, itemType, itemPrice, handleSum, itemUse }) => {
                 flex: 1,
                 marginBottom: 5,
                 marginTop: 5,
+                marginRight: 5,
             }}
         >
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+            <View style={{ flex: 5, flexDirection: 'row', alignItems: 'center' }}>
                 <Text>
                     <Icon name={iconName} size={30}></Icon>
                 </Text>
                 <Text>{itemName} :</Text>
             </View>
-            <View style={{ flex: 1, justifyContent: 'center', flexDirection: 'row' }}>
+            <View style={{ flex: 3, justifyContent: 'center', flexDirection: 'row' }}>
                 <TextInput
-                    defaultValue={itemUse}
+                    defaultValue={`${itemUse}`}
                     style={{
                         borderColor: '#000',
                         borderWidth: 1,
@@ -35,7 +36,7 @@ const Itemlist = ({ itemName, itemType, itemPrice, handleSum, itemUse }) => {
                     keyboardType="numeric"
                 ></TextInput>
             </View>
-            <View style={{ flex: 1, justifyContent: 'flex-end', flexDirection: 'row' }}>
+            <View style={{ flex: 2, justifyContent: 'flex-end', flexDirection: 'row' }}>
                 <Text>{itemPrice}k/ 1</Text>
             </View>
         </View>

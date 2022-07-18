@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Picker } from '@react-native-picker/picker';
 import * as Api from '../../Api/ServicesApi';
 import { dispatchFailed, dispatchFecth, dispatchSuccess, dispatchSuccessMenu } from '../../redux/actions/authAction';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 const RoomService = () => {
     const dispatch = useDispatch();
     const navigation = useNavigation();
@@ -329,129 +330,140 @@ const RoomService = () => {
             {show ? (
                 <View style={styles.showPopup}>
                     <View style={styles.PopupContainer}>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                padding: 20,
-                                paddingTop: 5,
-                                paddingBottom: 5,
-                                borderBottomWidth: 1,
-                                alignItems: 'center',
-                                flex: 1,
-                            }}
-                        >
-                            <Text style={{ fontSize: 16, fontWeight: '600', color: '#3DC5B5' }}>Item Info</Text>
-                            <TouchableOpacity onPress={() => setShow(!show)}>
-                                <Icon name="close" size={30}></Icon>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={{ justifyContent: 'space-around', flex: 11 }}>
-                            <View style={{ alignItems: 'center' }}>
-                                <Text>Type </Text>
-                                <View
-                                    style={{
-                                        borderWidth: 1,
-                                        borderColor: '#000',
-                                        borderRadius: 20,
-                                        alignItems: 'center',
-                                    }}
-                                >
-                                    <Picker
-                                        style={{ width: 120, textAlign: 'center' }}
-                                        selectedValue={menuTypeTmp}
-                                        onValueChange={(itemValue, index) => setmenuTypeTmp(itemValue)}
+                        <KeyboardAwareScrollView contentContainerStyle={{ height: '100%', width: '100%' }}>
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    padding: 20,
+                                    paddingTop: 5,
+                                    paddingBottom: 5,
+                                    borderBottomWidth: 1,
+                                    alignItems: 'center',
+                                    flex: 1,
+                                }}
+                            >
+                                <Text style={{ fontSize: 16, fontWeight: '600', color: '#3DC5B5' }}>Item Info</Text>
+                                <TouchableOpacity onPress={() => setShow(!show)}>
+                                    <Icon name="close" size={30}></Icon>
+                                </TouchableOpacity>
+                            </View>
+                            <View style={{ justifyContent: 'space-around', flex: 11 }}>
+                                <View style={{ alignItems: 'center' }}>
+                                    <Text>Type </Text>
+                                    <View
+                                        style={{
+                                            borderWidth: 1,
+                                            borderColor: '#000',
+                                            borderRadius: 20,
+                                            alignItems: 'center',
+                                        }}
                                     >
-                                        <Picker.Item label="Water" value="WATER" />
-                                        <Picker.Item label="Food" value="FOOD" />
-                                        <Picker.Item label="Service" value="SERVICE" />
-                                    </Picker>
-                                </View>
-                            </View>
-                            <View style={{ alignItems: 'center' }}>
-                                <Text> Name of Service </Text>
-                                <TextInput
-                                    style={{
-                                        width: 200,
-                                        height: 40,
-                                        borderWidth: 1,
-                                        borderColor: '#000',
-                                        borderRadius: 24,
-                                        paddingLeft: 10,
-                                    }}
-                                    value={menuNameTmp}
-                                    placeholder={'Service Name'}
-                                    onChangeText={(e) => setmenuNameTmp(e)}
-                                ></TextInput>
-                            </View>
-                            <View style={{ alignItems: 'center' }}>
-                                <Text>Price of Service</Text>
-                                <TextInput
-                                    style={{
-                                        width: 100,
-                                        height: 40,
-                                        borderWidth: 1,
-                                        borderColor: '#000',
-                                        borderRadius: 24,
-                                        paddingLeft: 10,
-                                    }}
-                                    defaultValue={`${menuPriceTmp}`}
-                                    placeholder={'Price'}
-                                    keyboardType={'numeric'}
-                                    onChangeText={(e) => setmenuPriceTmp(e)}
-                                ></TextInput>
-                            </View>
-                            {addItem ? (
-                                <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-around' }}>
-                                    <TouchableOpacity onPress={handleAddItemSubmit}>
-                                        <View
-                                            style={{
-                                                width: 120,
-                                                height: 36,
-                                                backgroundColor: '#3DC5B5',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                borderRadius: 16,
-                                            }}
+                                        <Picker
+                                            style={{ width: 120, textAlign: 'center' }}
+                                            selectedValue={menuTypeTmp}
+                                            onValueChange={(itemValue, index) => setmenuTypeTmp(itemValue)}
                                         >
-                                            <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>Add</Text>
-                                        </View>
-                                    </TouchableOpacity>
+                                            <Picker.Item label="Water" value="WATER" />
+                                            <Picker.Item label="Food" value="FOOD" />
+                                            <Picker.Item label="Service" value="SERVICE" />
+                                        </Picker>
+                                    </View>
                                 </View>
-                            ) : (
-                                <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-around' }}>
-                                    <TouchableOpacity onPress={handleUpdateItem}>
-                                        <View
-                                            style={{
-                                                width: 120,
-                                                height: 36,
-                                                backgroundColor: '#3DC5B5',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                borderRadius: 16,
-                                            }}
-                                        >
-                                            <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>Save</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity onPress={handleRemoveItem}>
-                                        <View
-                                            style={{
-                                                width: 120,
-                                                height: 36,
-                                                backgroundColor: 'orange',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                borderRadius: 16,
-                                            }}
-                                        >
-                                            <Text style={{ fontSize: 16, fontWeight: '600' }}>Delete Item</Text>
-                                        </View>
-                                    </TouchableOpacity>
+                                <View style={{ alignItems: 'center' }}>
+                                    <Text> Name of Service </Text>
+                                    <TextInput
+                                        style={{
+                                            width: 200,
+                                            height: 40,
+                                            borderWidth: 1,
+                                            borderColor: '#000',
+                                            borderRadius: 24,
+                                            paddingLeft: 10,
+                                        }}
+                                        value={menuNameTmp}
+                                        placeholder={'Service Name'}
+                                        onChangeText={(e) => setmenuNameTmp(e)}
+                                    ></TextInput>
                                 </View>
-                            )}
-                        </View>
+                                <View style={{ alignItems: 'center' }}>
+                                    <Text>Price of Service</Text>
+                                    <TextInput
+                                        style={{
+                                            width: 100,
+                                            height: 40,
+                                            borderWidth: 1,
+                                            borderColor: '#000',
+                                            borderRadius: 24,
+                                            paddingLeft: 10,
+                                        }}
+                                        defaultValue={`${menuPriceTmp}`}
+                                        placeholder={'Price'}
+                                        keyboardType={'numeric'}
+                                        onChangeText={(e) => setmenuPriceTmp(e)}
+                                    ></TextInput>
+                                </View>
+                                {addItem ? (
+                                    <View
+                                        style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-around' }}
+                                    >
+                                        <TouchableOpacity onPress={handleAddItemSubmit}>
+                                            <View
+                                                style={{
+                                                    width: 120,
+                                                    height: 36,
+                                                    backgroundColor: '#3DC5B5',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    borderRadius: 16,
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+                                                    Add
+                                                </Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : (
+                                    <View
+                                        style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-around' }}
+                                    >
+                                        <TouchableOpacity onPress={handleUpdateItem}>
+                                            <View
+                                                style={{
+                                                    width: 120,
+                                                    height: 36,
+                                                    backgroundColor: '#3DC5B5',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    borderRadius: 16,
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+                                                    Save
+                                                </Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={handleRemoveItem}>
+                                            <View
+                                                style={{
+                                                    width: 120,
+                                                    height: 36,
+                                                    backgroundColor: 'orange',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    borderRadius: 16,
+                                                }}
+                                            >
+                                                <Text style={{ fontSize: 16, fontWeight: '600' }}>Delete Item</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                            </View>
+                        </KeyboardAwareScrollView>
                     </View>
+
                     <View style={styles.PopupSplash}></View>
                 </View>
             ) : (

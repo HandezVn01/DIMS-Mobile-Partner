@@ -537,7 +537,7 @@ const RoomDetailScreen = ({ route }) => {
             </View>
 
             <View style={[styles.container]}>
-                <KeyboardAwareScrollView enableAutomaticScroll={true}>
+                <KeyboardAwareScrollView contentInsetAdjustmentBehavior="automatic">
                     <View style={{ alignItems: 'center' }}>
                         <View style={styles.card}>
                             <View style={{ zIndex: 1 }}>

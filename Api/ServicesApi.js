@@ -11,7 +11,16 @@ gettoken().then((result) => {
     token = result;
     return token;
 });
-
+// Get Customer List
+export const getCustomerList = async (hotelId) => {
+    const res = await axios.get('api/HostManage/Get-All-Inbound-User-Booking-info', {
+        headers: { Authorization: `Bearer ${token}` },
+        params: {
+            hotelID: hotelId,
+        },
+    });
+    return res.data;
+};
 // Get
 export const getMenuList = async (hotelId) => {
     const res = await axios.get('api/HostManage/Get-list-Menu', {

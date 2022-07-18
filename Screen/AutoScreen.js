@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, SafeAreaView, StyleSheet } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import * as RoomApi from '../Api/RoomApi';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { dispatchFecth, dispatchSuccess } from '../redux/actions/authAction';
 export default function AutoScreen() {
     const dispatch = useDispatch();

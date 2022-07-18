@@ -30,7 +30,7 @@ import moment from 'moment';
 import * as RoomApi from '../../Api/RoomApi';
 import NumberFormat from 'react-number-format';
 import { useDispatch, useSelector } from 'react-redux';
-import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
+import { dispatchFailed, dispatchFecth, dispatchLogout, dispatchSuccess } from '../../redux/actions/authAction';
 var { width, height } = Dimensions.get('window');
 const RoomDetailScreen = ({ route }) => {
     const hotelId = useSelector((state) => state.auth.hoteiId);
@@ -235,12 +235,17 @@ const RoomDetailScreen = ({ route }) => {
     const handleModifyAddCustomer = async () => {
         console.log(list2);
         dispatch(dispatchFecth());
+        console.log(data.bookingId);
         await RoomApi.updateCustomerInBooking(hotelId, data.bookingId, list2)
             .then((result) => {
                 Alert.alert('Update Success!');
                 setHasPermission(false);
+                setChangeState(false);
             })
-            .catch((err) => Alert.alert('Error ! ', 'Please try again later! '))
+            .catch((err) => {
+                Alert.alert('Error ! ', 'Token your account is expired! Please Login Again ! ');
+                dispatch(dispatchLogout());
+            })
             .finally(() => dispatch(dispatchSuccess()));
     };
     const removeItemHandle = ({ indexList }) => {
@@ -262,10 +267,15 @@ const RoomDetailScreen = ({ route }) => {
                     //     userBirthday: value[3],
                     //     userAddress: value[5],
                     // };
-                    // newList.foreach(item =>{
-                    //     listtmp.push(`${value[5]}|${value[3]}|${value[0]}|${value[2]}|${value[4]}`)
-                    // })
-                    console.log(list);
+                    newList.forEach((element) => {
+                        listtmp.push(
+                            `${element.userAddress}|${moment(element.userBirthday).format(
+                                'DDMMYYYY',
+                            )}|${element.userIdCard.trim()}|${element.userName}|${element.userSex}`,
+                        );
+                    });
+                    console.log(listtmp);
+                    setList2(listtmp);
                     setList(newList);
                 },
             },

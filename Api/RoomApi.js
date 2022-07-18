@@ -48,6 +48,7 @@ export const DeleteUsedItem = async (bookingDetailId, bookingDetailMenuId) => {
     return res.data;
 };
 export const updateCustomerInBooking = async (hotelId, bookingID, customerlist) => {
+    console.log(token);
     const res = await axios.put(
         `api/HostManage/Add-inbound-user-id`,
         {

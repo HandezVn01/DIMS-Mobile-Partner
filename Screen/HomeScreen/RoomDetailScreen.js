@@ -33,7 +33,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
 var { width, height } = Dimensions.get('window');
 const RoomDetailScreen = ({ route }) => {
-    const hotelid = 0;
+    const hotelId = useSelector((state) => state.auth.hoteiId);
     const dispatch = useDispatch();
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
@@ -84,30 +84,33 @@ const RoomDetailScreen = ({ route }) => {
                 bookingDetailMenuId: '',
             });
         });
-        if (usedItem.length > 0) {
-            list.forEach((item, index) => {
+        try {
+            if (usedItem.bookingDetailMenus.length > 0) {
+                list.forEach((item, index) => {
+                    usedItem.bookingDetailMenus.forEach((used) => {
+                        if (item.itemid === used.menuId) {
+                            item.quantity = used.bookingDetailMenuQuanity;
+                            item.bookingDetailMenuId = used.bookingDetailMenuId;
+                        }
+                    });
+                });
                 usedItem.bookingDetailMenus.forEach((used) => {
-                    if (item.itemid === used.menuId) {
-                        item.quantity = used.bookingDetailMenuQuanity;
-                        item.bookingDetailMenuId = used.bookingDetailMenuId;
+                    if (used.menuId === null) {
+                        list.push({
+                            itemName: used.bookingDetailMenuName,
+                            itemType: '',
+                            itemPrice: used.bookingDetailMenuPrice,
+                            itemTYPE: '',
+                            quantity: used.bookingDetailMenuQuanity,
+                            itemStatus: false,
+                            itemid: null,
+                            bookingDetailMenuId: used.bookingDetailMenuId,
+                        });
                     }
                 });
-            });
-            usedItem.bookingDetailMenus.forEach((used) => {
-                if (used.menuId === null) {
-                    list.push({
-                        itemName: used.bookingDetailMenuName,
-                        itemType: '',
-                        itemPrice: used.bookingDetailMenuPrice,
-                        itemTYPE: '',
-                        quantity: used.bookingDetailMenuQuanity,
-                        itemStatus: false,
-                        itemid: null,
-                        bookingDetailMenuId: used.bookingDetailMenuId,
-                    });
-                }
-            });
-        }
+            }
+        } catch (error) {}
+
         list.sort(function (a, b) {
             return a.itemTYPE - b.itemTYPE;
         });
@@ -159,24 +162,26 @@ const RoomDetailScreen = ({ route }) => {
         } else {
             // setActionName('Next');
             dispatch(dispatchFecth());
-            const check = RoomApi.CheckRoomDateBooking(roomid, hotelid, totalNight);
-            check
-                .then((result) => {
-                    dispatch(dispatchSuccess());
-                    setHasPermission(!hasPermission); // Camera On
-                    setCheckOutShow(!checkOutShow); // Popup Show off
-                })
-                .catch((err) => {
-                    dispatch(dispatchFailed());
-                    Alert.alert('Error', err);
-                });
+            try {
+                const check = RoomApi.CheckRoomDateBooking(hotelId, roomid, totalNight);
+                check
+                    .then((result) => {
+                        dispatch(dispatchSuccess());
+                        setHasPermission(!hasPermission); // Camera On
+                        setCheckOutShow(!checkOutShow); // Popup Show off
+                    })
+                    .catch((err) => {
+                        dispatch(dispatchFailed());
+                        Alert.alert('Error', err);
+                    });
+            } catch (error) {}
         }
     };
     const handleCheckInSubmit = async () => {
         setHasPermission(!hasPermission); // Camera Off
 
         dispatch(dispatchFecth());
-        await RoomApi.CheckInRoom(roomid, hotelid, totalNight, userEmail, totalPrice, isPayment, deposit, list2)
+        await RoomApi.CheckInRoom(roomid, hotelId, totalNight, userEmail, totalPrice, isPayment, deposit, list2)
             .then((result) => {
                 Alert.alert('Success', 'Checkin Success');
                 checkInSuccess();
@@ -194,7 +199,7 @@ const RoomDetailScreen = ({ route }) => {
         ]);
         const checkout = async () => {
             handleSubmitUsedItem();
-            await RoomApi.CheckOut(hotelid, data.bookingId)
+            await RoomApi.CheckOut(hotelId, data.bookingId)
                 .then((result) => {
                     Alert.alert('Success', 'Đã Check Out Thành Công!');
                     navigation.goBack();
@@ -228,10 +233,12 @@ const RoomDetailScreen = ({ route }) => {
         setHasPermission(!hasPermission);
     };
     const handleModifyAddCustomer = async () => {
+        console.log(list2);
         dispatch(dispatchFecth());
-        await RoomApi.updateCustomerInBooking(hotelid, data.bookingId, list2)
+        await RoomApi.updateCustomerInBooking(hotelId, data.bookingId, list2)
             .then((result) => {
                 Alert.alert('Update Success!');
+                setHasPermission(false);
             })
             .catch((err) => Alert.alert('Error ! ', 'Please try again later! '))
             .finally(() => dispatch(dispatchSuccess()));
@@ -247,9 +254,19 @@ const RoomDetailScreen = ({ route }) => {
                 onPress: () => {
                     setChangeState(true);
                     const newList = list.filter((item, index) => index !== indexList);
-                    const newlist2 = list2.filter((item, index) => index !== indexList);
+                    let listtmp = [];
+                    // const new_data = {
+                    //     userName: value[2],
+                    //     userSex: value[4],
+                    //     userIdCard: value[0],
+                    //     userBirthday: value[3],
+                    //     userAddress: value[5],
+                    // };
+                    // newList.foreach(item =>{
+                    //     listtmp.push(`${value[5]}|${value[3]}|${value[0]}|${value[2]}|${value[4]}`)
+                    // })
+                    console.log(list);
                     setList(newList);
-                    setList2(newlist2);
                 },
             },
         ]);
@@ -394,7 +411,7 @@ const RoomDetailScreen = ({ route }) => {
                                                 itemPrice={item.itemPrice}
                                                 itemType={item.itemType}
                                                 itemUse={item.quantity}
-                                                key={`${index} ${item.itemName}`}
+                                                key={`a${index}`}
                                                 handleSum={(e) =>
                                                     handleSumTotal({
                                                         quantity: e,
@@ -870,7 +887,7 @@ const RoomDetailScreen = ({ route }) => {
                                                                 itemPrice={item.itemPrice}
                                                                 itemType={item.itemType}
                                                                 itemUse={item.quantity}
-                                                                key={`${item.itemName}${index}`}
+                                                                key={`${index}`}
                                                                 handleSum={(e) =>
                                                                     handleSumTotal({
                                                                         quantity: e,

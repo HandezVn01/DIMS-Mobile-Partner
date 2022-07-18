@@ -4,6 +4,8 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { dispatchLogout } from '../../redux/actions/authAction';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const GeneralItem = ({ icon, title, action }) => {
     const navigation = useNavigation();
     const dispatch = useDispatch();
@@ -25,6 +27,8 @@ const GeneralItem = ({ icon, title, action }) => {
             {
                 text: 'OK',
                 onPress: () => {
+                    AsyncStorage.removeItem('@user');
+                    AsyncStorage.removeItem('@hotelid');
                     dispatch(dispatchLogout());
                 },
             },

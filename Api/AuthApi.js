@@ -11,3 +11,10 @@ export const GetUser = async (token) => {
     });
     return res.data;
 };
+
+export const getAllHotel = async (token) => {
+    const res = await axios.get('https://dims-system.herokuapp.com/api/HostManage/Host-All-Hotel', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data;
+};

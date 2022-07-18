@@ -10,7 +10,7 @@ import { TextInput } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
 var { width, height } = Dimensions.get('window');
 const ViewStatusRoom = ({ route }) => {
-    const hotelid = 0;
+    const hotelId = useSelector((state) => state.auth.hoteiId);
     const title = route.params.title;
     const navigation = useNavigation();
     const dispatch = useDispatch();
@@ -20,21 +20,23 @@ const ViewStatusRoom = ({ route }) => {
     const [totalNight, setTotalNight] = useState(1);
     const refreshData = async () => {
         try {
-            await RoomApi.GetAllStatus(hotelid)
+            await RoomApi.GetAllStatus(hotelId)
                 .then((data) => {
                     setDatas(data);
                 })
-                .catch((err) => console.log(err));
+                .catch((err) => console.log(err))
+                .finally(() => null);
         } catch (error) {}
     };
     useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
+        const unsubscribe = navigation.addListener('focus', async () => {
             if (route.params.index === 1) {
-                refreshData();
+                await refreshData();
             }
         });
+        unsubscribe;
         return () => {
-            unsubscribe;
+            console.log('return');
         };
     }, []);
     const handleRoom = async ({ roomName, status, roomId }) => {
@@ -117,7 +119,7 @@ const ViewStatusRoom = ({ route }) => {
     } catch (error) {}
     const handleSearch = () => {
         dispatch(dispatchFecth());
-        RoomApi.GetStatusSearch(hotelid, totalNight)
+        RoomApi.GetStatusSearch(totalNight)
             .then((result) => setDatas(result))
             .catch((err) => console.log(err.respones))
             .finally(() => dispatch(dispatchSuccess()));

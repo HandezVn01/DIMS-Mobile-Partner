@@ -13,11 +13,11 @@ import { dispatchFailMenu, dispatchFetchMenu, dispatchSuccessMenu } from '../red
 var { width, height } = Dimensions.get('window');
 export default function HomeScreen() {
     const dispatch = useDispatch();
-    const hotelid = 0;
+    const hotelId = useSelector((state) => state.auth.hoteiId);
     useEffect(() => {
         const getServiceHotel = async () => {
             dispatch(dispatchFetchMenu());
-            return await ServiceApi.getMenuList(hotelid)
+            return await ServiceApi.getMenuList(hotelId)
                 .then((result) => {
                     dispatch(dispatchSuccessMenu(result));
                 })
@@ -27,8 +27,9 @@ export default function HomeScreen() {
         return () => {
             console.log('This will be logged on unmount');
         };
-    }, [hotelid]);
+    }, [hotelId]);
     const auth = useSelector((state) => state.auth);
+
     return (
         <SafeAreaView>
             <View style={styles.header}>

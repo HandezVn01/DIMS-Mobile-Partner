@@ -2,9 +2,9 @@
     "expo": {
         "name": "DIMS",
         "slug": "DIMS",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "orientation": "portrait",
-        "icon": "./assets/icon.png",
+        "icon": "./assets/LOGO.png",
         "userInterfaceStyle": "light",
         "splash": {
             "image": "./assets/splash.png",
@@ -24,7 +24,8 @@
                 "foregroundImage": "./assets/adaptive-icon.png",
                 "backgroundColor": "#FFFFFF"
             },
-            "softwareKeyboardLayoutMode": "pan"
+            "softwareKeyboardLayoutMode": "pan",
+            "package": "com.handez.DIMS"
         },
         "web": {
             "favicon": "./assets/favicon.png"

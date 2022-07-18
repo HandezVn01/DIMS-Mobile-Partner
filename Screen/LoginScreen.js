@@ -52,10 +52,16 @@ export default function LoginScreen({ route }) {
                         AuthApi.GetUser(data.token)
                             .then(async (result) => {
                                 if (result.role === 'HOST') {
-                                    dispatch(dispatchSuccess(data));
-                                    dispatch(dispatchLogin(result));
                                     await AsyncStorage.setItem('@user', data.token);
-                                    navigation.navigate('Home');
+                                    await AuthApi.getAllHotel(data.token)
+                                        .then(async (result2) => {
+                                            await AsyncStorage.setItem('@hotelid', `${result2[0].hotelId}`);
+
+                                            dispatch(dispatchLogin(result, `${result2[0].hotelId}`));
+                                            dispatch(dispatchSuccess());
+                                            navigation.navigate('Home');
+                                        })
+                                        .catch((err) => {});
                                 } else {
                                     Alert.alert('Warning', 'Tài khoản của bạn không phải là tài khoản của Partner !');
                                     dispatch(dispatchFailed('NotAdmin'));

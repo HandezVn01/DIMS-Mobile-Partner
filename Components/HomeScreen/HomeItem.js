@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/actions/authAction';
 import * as RoomStatusAPI from '../../Api/RoomApi';
 const HomeItem = ({ title, icon, backgroundColor, index }) => {
-    const hotelId = 0;
+    const hotelId = useSelector((state) => state.auth.hoteiId);
     const navigation = useNavigation();
     const [token, setToken] = useState('');
     const dispatch = useDispatch();

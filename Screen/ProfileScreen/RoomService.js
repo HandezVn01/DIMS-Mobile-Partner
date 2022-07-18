@@ -13,7 +13,7 @@ const RoomService = () => {
     const [addItem, setAddItem] = useState(false);
     const [MenuList, setMenuList] = useState(useSelector((state) => state.menuReducer.data) || []);
 
-    const hotelid = 0;
+    const hotelId = useSelector((state) => state.auth.hoteiId);
     const [show, setShow] = useState(false);
     let typeList = [];
     const [newItemList, setNewItemList] = useState([]);
@@ -97,7 +97,7 @@ const RoomService = () => {
             } else {
                 console.log('hello');
                 dispatch(dispatchFecth());
-                Api.UpdateItemMenu(menuIDTmp, hotelid, menuNameTmp, menuPriceTmp, menuTypeTmp)
+                Api.UpdateItemMenu(hotelId, menuIDTmp, menuNameTmp, menuPriceTmp, menuTypeTmp)
                     .then((result) => {
                         MenuList.map((list) => {
                             if (list.menuId === menuIDTmp) {
@@ -142,7 +142,7 @@ const RoomService = () => {
                     Alert.alert('Remove Success !', 'Đã Xóa ');
                 } else {
                     dispatch(dispatchFecth());
-                    Api.RemoveItemMenu(menuIDTmp, hotelid, menuNameTmp, menuPriceTmp, menuTypeTmp, false)
+                    Api.RemoveItemMenu(hotelId, menuIDTmp, menuNameTmp, menuPriceTmp, menuTypeTmp, false)
                         .then((result) => {
                             MenuList.map((list) => {
                                 if (list.menuId === menuIDTmp) {

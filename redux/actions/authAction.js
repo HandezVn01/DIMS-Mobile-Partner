@@ -1,14 +1,16 @@
 import ACTIONS from '.';
-export const dispatchLogin = (payload) => {
+export const dispatchLogin = (payload, hotelid) => {
     return {
         type: ACTIONS.LOGIN,
         payload,
+        hotelid,
     };
 };
-export const dispatchGetUser = (payload) => {
+export const dispatchGetUser = (payload, hotelid) => {
     return {
         type: ACTIONS.GETUSER,
         payload,
+        hotelid,
     };
 };
 export const dispatchRegister = (payload) => {

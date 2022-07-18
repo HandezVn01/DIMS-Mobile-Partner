@@ -4,26 +4,26 @@ const gettoken = async () => {
     const user = await AsyncStorage.getItem('@user');
     return user;
 };
+
 let token = '';
+
 gettoken().then((result) => {
     token = result;
-    console.log(token);
     return token;
 });
 
 // Get
-export const getMenuList = async (hotelID) => {
+export const getMenuList = async (hotelId) => {
     const res = await axios.get('api/HostManage/Get-list-Menu', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
-            hotelID: hotelID,
+            hotelID: hotelId,
         },
     });
     return res.data;
 };
 // Post
 export const AddItemMenu = async (itemList) => {
-    console.log(itemList);
     const res = await axios.post(`api/HostManage/Add-Item-Menu`, itemList, {
         headers: { Authorization: `Bearer ${token}` },
     });
@@ -49,11 +49,11 @@ export const AddExtraFee = async () => {
 };
 
 // Put
-export const UpdateItemMenu = async (menuId, hotelID, menuName, menuPrice, menuType) => {
+export const UpdateItemMenu = async (hotelId, menuId, menuName, menuPrice, menuType) => {
     const res = await axios.put(
         `api/HostManage/Update-Item-Menu?MenuID=${menuId}`,
         {
-            hotelId: hotelID,
+            hotelId: hotelId,
             menuName: menuName,
             menuPrice: menuPrice,
             menuType: menuType,
@@ -66,11 +66,11 @@ export const UpdateItemMenu = async (menuId, hotelID, menuName, menuPrice, menuT
     return res;
 };
 
-export const RemoveItemMenu = async (menuId, hotelID, menuName, menuPrice, menuType, menuStatus) => {
+export const RemoveItemMenu = async (hotelId, menuId, menuName, menuPrice, menuType, menuStatus) => {
     const res = await axios.put(
         `api/HostManage/Update-Item-Menu?MenuID=${menuId}`,
         {
-            hotelId: hotelID,
+            hotelId: hotelId,
             menuName: menuName,
             menuPrice: menuPrice,
             menuType: menuType,

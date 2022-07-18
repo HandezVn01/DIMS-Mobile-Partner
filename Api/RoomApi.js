@@ -1,15 +1,18 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const gettoken = async () => {
     const user = await AsyncStorage.getItem('@user');
     return user;
 };
+
 let token = '';
+
 gettoken().then((result) => {
     token = result;
-    console.log(token);
     return token;
 });
+
 let today = new Date();
 let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
 
@@ -107,7 +110,6 @@ export const CheckInRoom = async (
     deposit,
     customerlist,
 ) => {
-    console.log(customerlist);
     const res = await axios.post(
         'api/HostManage/Host-Local-Payment-final',
         {
@@ -132,7 +134,7 @@ export const CheckInRoom = async (
     );
     return res.data;
 };
-export const CheckRoomDateBooking = async (roomId, hotelId, totalNight) => {
+export const CheckRoomDateBooking = async (hotelId, roomId, totalNight) => {
     const res = await axios.post(
         'api/HostManage/Check-Room-Date-Booking',
         {
@@ -150,6 +152,7 @@ export const CheckRoomDateBooking = async (roomId, hotelId, totalNight) => {
         },
     );
     return res.data;
+    return null;
 };
 export const getRoomInfo = async (roomId) => {
     const res = await axios.get('api/HostManage/Host-A-Detail-Room', {

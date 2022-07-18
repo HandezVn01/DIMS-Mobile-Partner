@@ -57,7 +57,7 @@ export default function LoginScreen({ route }) {
                                         .then(async (result2) => {
                                             await AsyncStorage.setItem('@hotelid', `${result2[0].hotelId}`);
 
-                                            dispatch(dispatchLogin(result, `${result2[0].hotelId}`));
+                                            dispatch(dispatchLogin(result, `${result2[0].hotelId}`, data.token));
                                             dispatch(dispatchSuccess());
                                             navigation.navigate('Home');
                                         })

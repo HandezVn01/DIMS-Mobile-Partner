@@ -14,10 +14,11 @@ var { width, height } = Dimensions.get('window');
 export default function HomeScreen() {
     const dispatch = useDispatch();
     const hotelId = useSelector((state) => state.auth.hoteiId);
+    const token = useSelector((state) => state.auth.token);
     useEffect(() => {
         const getServiceHotel = async () => {
             dispatch(dispatchFetchMenu());
-            return await ServiceApi.getMenuList(hotelId)
+            return await ServiceApi.getMenuList(hotelId, token)
                 .then((result) => {
                     dispatch(dispatchSuccessMenu(result));
                 })

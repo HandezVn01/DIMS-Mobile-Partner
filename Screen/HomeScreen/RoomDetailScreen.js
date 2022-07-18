@@ -34,6 +34,7 @@ import { dispatchFailed, dispatchFecth, dispatchLogout, dispatchSuccess } from '
 var { width, height } = Dimensions.get('window');
 const RoomDetailScreen = ({ route }) => {
     const hotelId = useSelector((state) => state.auth.hoteiId);
+    const token = useSelector((state) => state.auth.token);
     const dispatch = useDispatch();
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
@@ -61,9 +62,9 @@ const RoomDetailScreen = ({ route }) => {
     // API Get Data
     const checkoutShowRef = useRef(new Animated.Value(0)).current;
     const [total, setTotal] = useState(parseInt(data.totalPrice) - parseInt(data.deposit));
-    const totalTmp = parseInt(data.totalPrice) - parseInt(data.deposit);
+    const totalTmp = data.paymentCondition === 'True' ? 0 : parseInt(data.totalPrice) - parseInt(data.deposit);
     const checkInSuccess = async () => {
-        await RoomApi.getRoomInfo(roomid)
+        await RoomApi.getRoomInfo(roomid, token)
             .then((result) => {
                 setData(result);
             })
@@ -163,7 +164,7 @@ const RoomDetailScreen = ({ route }) => {
             // setActionName('Next');
             dispatch(dispatchFecth());
             try {
-                const check = RoomApi.CheckRoomDateBooking(hotelId, roomid, totalNight);
+                const check = RoomApi.CheckRoomDateBooking(hotelId, roomid, totalNight, token);
                 check
                     .then((result) => {
                         dispatch(dispatchSuccess());
@@ -181,7 +182,7 @@ const RoomDetailScreen = ({ route }) => {
         setHasPermission(!hasPermission); // Camera Off
 
         dispatch(dispatchFecth());
-        await RoomApi.CheckInRoom(roomid, hotelId, totalNight, userEmail, totalPrice, isPayment, deposit, list2)
+        await RoomApi.CheckInRoom(roomid, hotelId, totalNight, userEmail, totalPrice, isPayment, deposit, list2, token)
             .then((result) => {
                 Alert.alert('Success', 'Checkin Success');
                 checkInSuccess();
@@ -198,14 +199,16 @@ const RoomDetailScreen = ({ route }) => {
             { text: 'OK', onPress: () => checkout() },
         ]);
         const checkout = async () => {
+            dispatch(dispatchFecth());
             handleSubmitUsedItem();
-            await RoomApi.CheckOut(hotelId, data.bookingId)
+            await RoomApi.CheckOut(hotelId, data.bookingId, token)
                 .then((result) => {
                     Alert.alert('Success', 'Đã Check Out Thành Công!');
                     navigation.goBack();
                 })
                 .catch((err) => Alert.alert('Error', 'Xin Lỗi Server đang lỗi !'));
             setCheckOutShow(!checkOutShow);
+            dispatch(dispatchSuccess());
         };
     };
     const handleShowUp = () => {
@@ -236,7 +239,7 @@ const RoomDetailScreen = ({ route }) => {
         console.log(list2);
         dispatch(dispatchFecth());
         console.log(data.bookingId);
-        await RoomApi.updateCustomerInBooking(hotelId, data.bookingId, list2)
+        await RoomApi.updateCustomerInBooking(hotelId, data.bookingId, list2, token)
             .then((result) => {
                 Alert.alert('Update Success!');
                 setHasPermission(false);
@@ -318,7 +321,7 @@ const RoomDetailScreen = ({ route }) => {
         if (usedItem.length > 0) {
             try {
                 dispatch(dispatchFecth());
-                RoomApi.AddUsedItem(usedItem)
+                RoomApi.AddUsedItem(usedItem, token)
                     .then((result) => console.log(result))
                     .catch((err) => console.log(err.respones))
                     .finally(() => dispatch(dispatchSuccess()));
@@ -329,13 +332,16 @@ const RoomDetailScreen = ({ route }) => {
             console.log(reasonExtra);
             try {
                 dispatch(dispatchFecth());
-                RoomApi.AddExtraFee([
-                    {
-                        bookingDetailId: data.bookingDetailId,
-                        problemDetailMenuName: reasonExtra,
-                        price: extraFee,
-                    },
-                ])
+                RoomApi.AddExtraFee(
+                    [
+                        {
+                            bookingDetailId: data.bookingDetailId,
+                            problemDetailMenuName: reasonExtra,
+                            price: extraFee,
+                        },
+                    ],
+                    token,
+                )
                     .then((result) => {
                         setItemListUse([
                             ...itemListUse,
@@ -369,7 +375,7 @@ const RoomDetailScreen = ({ route }) => {
                 text: 'OK',
                 onPress: () => {
                     dispatch(dispatchFecth());
-                    RoomApi.DeleteUsedItem(data.bookingDetailId, bookingDetailMenuId)
+                    RoomApi.DeleteUsedItem(data.bookingDetailId, bookingDetailMenuId, token)
                         .then((result) => {
                             const newList = itemListUse.filter((item, index) => index !== number);
                             setItemListUse(newList);
@@ -1000,7 +1006,7 @@ const RoomDetailScreen = ({ route }) => {
                                     {list.map((customer, index) => {
                                         return (
                                             <Customer
-                                                index={index}
+                                                index={index + 1}
                                                 name={customer.userName}
                                                 cccd={customer.userIdCard}
                                                 key={index}

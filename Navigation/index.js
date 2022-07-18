@@ -36,10 +36,14 @@ const Navigation = () => {
                 const user = await AsyncStorage.getItem('@user');
                 dispatch(dispatchFecth());
                 await AuthApi.GetUser(user)
-                    .then((result) => {
+                    .then(async (result) => {
                         if (result.role === 'HOST') {
-                            dispatch(dispatchSuccess(result));
-                            dispatch(dispatchLogin(result));
+                            await AuthApi.getAllHotel(user)
+                                .then(async (result2) => {
+                                    dispatch(dispatchLogin(result, `${result2[0].hotelId}`, user));
+                                    dispatch(dispatchSuccess());
+                                })
+                                .catch((err) => {});
                         } else {
                             Alert.alert('Warning', 'Vui Lòng Đăng Nhập Lại !');
                             dispatch(dispatchFailed('NotAdmin'));

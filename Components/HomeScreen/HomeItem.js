@@ -9,16 +9,10 @@ import * as RoomStatusAPI from '../../Api/RoomApi';
 const HomeItem = ({ title, icon, backgroundColor, index }) => {
     const hotelId = useSelector((state) => state.auth.hoteiId);
     const navigation = useNavigation();
-    const [token, setToken] = useState('');
     const dispatch = useDispatch();
     let today = new Date();
     let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-    const gettoken = async () => {
-        const user = await AsyncStorage.getItem('@user');
-        return user;
-    };
-    const get = gettoken();
-    get.then((data) => setToken(data));
+    const token = useSelector((state) => state.auth.token);
     const handleClick = () => {
         const test = async () => {
             const go = (data) => {
@@ -30,21 +24,21 @@ const HomeItem = ({ title, icon, backgroundColor, index }) => {
             };
             dispatch(dispatchFecth());
             if (index == 1) {
-                await RoomStatusAPI.GetAllStatus(hotelId)
+                await RoomStatusAPI.GetAllStatus(hotelId, token)
                     .then((data) => {
                         go(data);
                     })
                     .catch((err) => console.log(err));
             }
             if (index == 2) {
-                await RoomStatusAPI.GetStatusSearch(hotelId, 1)
+                await RoomStatusAPI.GetStatusSearch(hotelId, 1, token)
                     .then((data) => {
                         go(data);
                     })
                     .catch((err) => console.log(err));
             }
             if (index == 3) {
-                await RoomStatusAPI.GetStatusCheckOut(hotelId)
+                await RoomStatusAPI.GetStatusCheckOut(hotelId, token)
                     .then((data) => {
                         go(data);
                     })

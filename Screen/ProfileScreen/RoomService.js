@@ -12,7 +12,7 @@ const RoomService = () => {
     const navigation = useNavigation();
     const [addItem, setAddItem] = useState(false);
     const [MenuList, setMenuList] = useState(useSelector((state) => state.menuReducer.data) || []);
-
+    const token = useSelector((state) => state.auth.token);
     const hotelId = useSelector((state) => state.auth.hoteiId);
     const [show, setShow] = useState(false);
     let typeList = [];
@@ -43,7 +43,7 @@ const RoomService = () => {
         setNewItemList([
             ...newItemList,
             {
-                hotelId: hotelid,
+                hotelId: hotelId,
                 menuName: menuNameTmp,
                 menuPrice: menuPriceTmp,
                 menuType: menuTypeTmp,
@@ -53,7 +53,7 @@ const RoomService = () => {
         setMenuList([
             ...MenuList,
             {
-                hotelId: hotelid,
+                hotelId: hotelId,
                 menuId: MenuList.length + 'Add',
                 menuName: menuNameTmp,
                 menuPrice: menuPriceTmp,
@@ -68,7 +68,7 @@ const RoomService = () => {
     const handleAddItemFinal = () => {
         console.log(newItemList);
         dispatch(dispatchFecth());
-        Api.AddItemMenu(newItemList)
+        Api.AddItemMenu(newItemList, token)
             .then((result) => {
                 console.log(result);
                 dispatch(dispatchSuccess());
@@ -97,7 +97,7 @@ const RoomService = () => {
             } else {
                 console.log('hello');
                 dispatch(dispatchFecth());
-                Api.UpdateItemMenu(hotelId, menuIDTmp, menuNameTmp, menuPriceTmp, menuTypeTmp)
+                Api.UpdateItemMenu(hotelId, menuIDTmp, menuNameTmp, menuPriceTmp, menuTypeTmp, token)
                     .then((result) => {
                         MenuList.map((list) => {
                             if (list.menuId === menuIDTmp) {
@@ -142,7 +142,7 @@ const RoomService = () => {
                     Alert.alert('Remove Success !', 'Đã Xóa ');
                 } else {
                     dispatch(dispatchFecth());
-                    Api.RemoveItemMenu(hotelId, menuIDTmp, menuNameTmp, menuPriceTmp, menuTypeTmp, false)
+                    Api.RemoveItemMenu(hotelId, menuIDTmp, menuNameTmp, menuPriceTmp, menuTypeTmp, false, token)
                         .then((result) => {
                             MenuList.map((list) => {
                                 if (list.menuId === menuIDTmp) {

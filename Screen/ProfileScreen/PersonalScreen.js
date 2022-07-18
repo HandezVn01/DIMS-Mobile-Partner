@@ -10,13 +10,14 @@ import axios from 'axios';
 const PersonalScreen = () => {
     const navigation = useNavigation();
     const hotelId = useSelector((state) => state.auth.hoteiId);
+    const token = useSelector((state) => state.auth.token);
     const [customers, setCustomers] = useState([]);
     const dispatch = useDispatch();
     const [prompt, setPrompt] = useState(false);
     const [inputText, setInputText] = useState('');
     useEffect(() => {
         dispatch(dispatchFecth());
-        getCustomerList(hotelId)
+        getCustomerList(hotelId, token)
             .then((result) => {
                 setCustomers(result);
             })

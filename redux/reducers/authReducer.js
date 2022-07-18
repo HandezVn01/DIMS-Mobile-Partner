@@ -6,6 +6,7 @@ const initialState = {
     isAdmin: false,
     isHost: false,
     hoteiId: '',
+    token: '',
 };
 
 const authReducer = (state = initialState, action) => {
@@ -16,6 +17,7 @@ const authReducer = (state = initialState, action) => {
                 isLogged: true,
                 user: action.payload,
                 hoteiId: action.hotelid,
+                token: action.token,
             };
         case ACTIONS.LOGOUT:
             AsyncStorage.clear();
@@ -32,6 +34,7 @@ const authReducer = (state = initialState, action) => {
                 isLogged: true,
                 isHost: action.payload.isHost,
                 hoteiId: action.hotelid,
+                token: action.token,
             };
         case ACTIONS.RELOAD:
             const foundUser = localStorage.getItem('user');

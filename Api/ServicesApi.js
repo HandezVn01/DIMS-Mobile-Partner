@@ -1,18 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const gettoken = async () => {
-    const user = await AsyncStorage.getItem('@user');
-    return user;
-};
 
-let token = '';
-
-gettoken().then((result) => {
-    token = result;
-    return token;
-});
 // Get Customer List
-export const getCustomerList = async (hotelId) => {
+export const getCustomerList = async (hotelId, token) => {
     const res = await axios.get('api/HostManage/Get-All-Inbound-User-Booking-info', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
@@ -22,7 +12,7 @@ export const getCustomerList = async (hotelId) => {
     return res.data;
 };
 // Get
-export const getMenuList = async (hotelId) => {
+export const getMenuList = async (hotelId, token) => {
     const res = await axios.get('api/HostManage/Get-list-Menu', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
@@ -32,14 +22,14 @@ export const getMenuList = async (hotelId) => {
     return res.data;
 };
 // Post
-export const AddItemMenu = async (itemList) => {
+export const AddItemMenu = async (itemList, token) => {
     const res = await axios.post(`api/HostManage/Add-Item-Menu`, itemList, {
         headers: { Authorization: `Bearer ${token}` },
     });
     return res.data;
 };
 
-export const AddExtraFee = async () => {
+export const AddExtraFee = async (token) => {
     const res = await axios.post(
         `api/HostManage/Add-Item-For-Extrafee`,
         [
@@ -58,7 +48,7 @@ export const AddExtraFee = async () => {
 };
 
 // Put
-export const UpdateItemMenu = async (hotelId, menuId, menuName, menuPrice, menuType) => {
+export const UpdateItemMenu = async (hotelId, menuId, menuName, menuPrice, menuType, token) => {
     const res = await axios.put(
         `api/HostManage/Update-Item-Menu?MenuID=${menuId}`,
         {
@@ -75,7 +65,7 @@ export const UpdateItemMenu = async (hotelId, menuId, menuName, menuPrice, menuT
     return res;
 };
 
-export const RemoveItemMenu = async (hotelId, menuId, menuName, menuPrice, menuType, menuStatus) => {
+export const RemoveItemMenu = async (hotelId, menuId, menuName, menuPrice, menuType, menuStatus, token) => {
     const res = await axios.put(
         `api/HostManage/Update-Item-Menu?MenuID=${menuId}`,
         {

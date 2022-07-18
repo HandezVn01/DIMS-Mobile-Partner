@@ -11,6 +11,7 @@ import { Picker } from '@react-native-picker/picker';
 var { width, height } = Dimensions.get('window');
 const ViewStatusRoom = ({ route }) => {
     const hotelId = useSelector((state) => state.auth.hoteiId);
+    const token = useSelector((state) => state.auth.token);
     const title = route.params.title;
     const navigation = useNavigation();
     const dispatch = useDispatch();
@@ -20,7 +21,7 @@ const ViewStatusRoom = ({ route }) => {
     const [totalNight, setTotalNight] = useState(1);
     const refreshData = async () => {
         try {
-            await RoomApi.GetAllStatus(hotelId)
+            await RoomApi.GetAllStatus(hotelId, token)
                 .then((data) => {
                     setDatas(data);
                 })
@@ -52,9 +53,9 @@ const ViewStatusRoom = ({ route }) => {
         if (status === 2) {
             try {
                 dispatch(dispatchFecth());
-                await RoomApi.getRoomInfo(roomId)
+                await RoomApi.getRoomInfo(roomId, token)
                     .then((data) => {
-                        RoomApi.getUsedMenu(data.bookingDetailId)
+                        RoomApi.getUsedMenu(data.bookingDetailId, token)
                             .then((result) => go(data, result))
                             .catch((error) => dispatch(dispatchFailed()));
                     })
@@ -87,7 +88,7 @@ const ViewStatusRoom = ({ route }) => {
     };
     const handleCleanRoom = async (roomId) => {
         dispatch(dispatchFecth());
-        await RoomApi.cleanRoom(roomId)
+        await RoomApi.cleanRoom(roomId, token)
             .then((result) => refreshData())
             .catch((err) => console.log(err))
             .finally(() => dispatch(dispatchSuccess()));
@@ -119,7 +120,7 @@ const ViewStatusRoom = ({ route }) => {
     } catch (error) {}
     const handleSearch = () => {
         dispatch(dispatchFecth());
-        RoomApi.GetStatusSearch(totalNight)
+        RoomApi.GetStatusSearch(totalNight, token)
             .then((result) => setDatas(result))
             .catch((err) => console.log(err.respones))
             .finally(() => dispatch(dispatchSuccess()));

@@ -1,44 +1,32 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const gettoken = async () => {
-    const user = await AsyncStorage.getItem('@user');
-    return user;
-};
-
-let token = '';
-
-gettoken().then((result) => {
-    token = result;
-    return token;
-});
-
 let today = new Date();
 let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
 
 // Get User Used-Menu
-export const getUsedMenu = async (bookingDetailId) => {
+export const getUsedMenu = async (bookingDetailId, token) => {
     const res = await axios.get(`api/HostManage/Get-User-Menu?BookingDetailID=${bookingDetailId}`, {
         headers: { Authorization: `Bearer ${token}` },
     });
     return res.data;
 };
 // Add-Item-For-ExtraFee
-export const AddUsedItem = async (itemList) => {
+export const AddUsedItem = async (itemList, token) => {
     const res = await axios.post(`api/HostManage/Add-Item-For-Extrafee`, itemList, {
         headers: { Authorization: `Bearer ${token}` },
     });
     return res.data;
 };
 // Add Problem for ExtraFee
-export const AddExtraFee = async (itemList) => {
+export const AddExtraFee = async (itemList, token) => {
     const res = await axios.post(`api/HostManage/Add-Problem-Extra-Fee`, itemList, {
         headers: { Authorization: `Bearer ${token}` },
     });
     return res.data;
 };
 // Delete Item for Extra Fee
-export const DeleteUsedItem = async (bookingDetailId, bookingDetailMenuId) => {
+export const DeleteUsedItem = async (bookingDetailId, bookingDetailMenuId, token) => {
     const res = await axios.delete(
         `api/HostManage/Delete-Item-For-Extrafee?BookingDetailId=${bookingDetailId}&BookingDetailMenuId=${bookingDetailMenuId}`,
         {
@@ -47,8 +35,7 @@ export const DeleteUsedItem = async (bookingDetailId, bookingDetailMenuId) => {
     );
     return res.data;
 };
-export const updateCustomerInBooking = async (hotelId, bookingID, customerlist) => {
-    console.log(token);
+export const updateCustomerInBooking = async (hotelId, bookingID, customerlist, token) => {
     const res = await axios.put(
         `api/HostManage/Add-inbound-user-id`,
         {
@@ -63,7 +50,7 @@ export const updateCustomerInBooking = async (hotelId, bookingID, customerlist) 
     return res;
 };
 
-export const cleanRoom = async (roomId) => {
+export const cleanRoom = async (roomId, token) => {
     const res = await axios.put(
         `api/HostManage/Update-Clean-Status?roomID=${roomId}`,
         {},
@@ -74,7 +61,7 @@ export const cleanRoom = async (roomId) => {
     return res;
 };
 
-export const CheckInAuto = async (hotelId, qrContent) => {
+export const CheckInAuto = async (hotelId, qrContent, token) => {
     const res = await axios.post(
         `api/QrsManage/Check-in-Main-Qr`,
         {
@@ -89,7 +76,7 @@ export const CheckInAuto = async (hotelId, qrContent) => {
     return res.data;
 };
 
-export const CheckOut = async (hotelId, bookingId) => {
+export const CheckOut = async (hotelId, bookingId, token) => {
     const res = await axios.put(
         `api/HostManage/Checkout-Local?hotelId=${hotelId}&bookingID=${bookingId}`,
         {},
@@ -110,6 +97,7 @@ export const CheckInRoom = async (
     isPayment,
     deposit,
     customerlist,
+    token,
 ) => {
     const res = await axios.post(
         'api/HostManage/Host-Local-Payment-final',
@@ -135,7 +123,7 @@ export const CheckInRoom = async (
     );
     return res.data;
 };
-export const CheckRoomDateBooking = async (hotelId, roomId, totalNight) => {
+export const CheckRoomDateBooking = async (hotelId, roomId, totalNight, token) => {
     const res = await axios.post(
         'api/HostManage/Check-Room-Date-Booking',
         {
@@ -155,7 +143,7 @@ export const CheckRoomDateBooking = async (hotelId, roomId, totalNight) => {
     return res.data;
     return null;
 };
-export const getRoomInfo = async (roomId) => {
+export const getRoomInfo = async (roomId, token) => {
     const res = await axios.get('api/HostManage/Host-A-Detail-Room', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
@@ -165,7 +153,7 @@ export const getRoomInfo = async (roomId) => {
     });
     return res.data;
 };
-export const GetAllStatus = async (hotelId) => {
+export const GetAllStatus = async (hotelId, token) => {
     const res = await axios.get('api/HostManage/Host-A-Hotel-All-Room-Status-Today', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
@@ -176,7 +164,7 @@ export const GetAllStatus = async (hotelId) => {
     return res.data;
 };
 
-export const GetStatusCheckOut = async (hotelId) => {
+export const GetStatusCheckOut = async (hotelId, token) => {
     const res = await axios.get('api/HostManage/Host-A-Hotel-All-Room-Status-CheckOut', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
@@ -187,7 +175,7 @@ export const GetStatusCheckOut = async (hotelId) => {
     return res.data;
 };
 
-export const GetStatusSearch = async (hotelId, totalNight) => {
+export const GetStatusSearch = async (hotelId, totalNight, token) => {
     const res = await axios.get('api/HostManage/Host-A-Hotel-All-Room-Status-Search', {
         headers: { Authorization: `Bearer ${token}` },
         params: {

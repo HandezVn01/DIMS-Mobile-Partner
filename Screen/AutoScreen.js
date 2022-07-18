@@ -7,12 +7,13 @@ import { dispatchFecth, dispatchSuccess } from '../redux/actions/authAction';
 export default function AutoScreen() {
     const dispatch = useDispatch();
     const hotelId = useSelector((state) => state.auth.hoteiId);
+    const token = useSelector((state) => state.auth.token);
     const [datatmp, setDataTmp] = useState('');
     const handleBarCodeScanned = ({ type, data }) => {
         if (data !== datatmp) {
             alert(`${data}`);
             dispatch(dispatchFecth());
-            RoomApi.CheckInAuto(hotelId, data)
+            RoomApi.CheckInAuto(hotelId, data, token)
                 .then((result) => console.log(result))
                 .catch((err) => console.log(err));
             setDataTmp(datatmp);

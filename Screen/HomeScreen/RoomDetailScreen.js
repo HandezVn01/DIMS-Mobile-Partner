@@ -688,7 +688,7 @@ const RoomDetailScreen = ({ route }) => {
                                     { opacity: checkoutShowRef },
                                 ]}
                             >
-                                {status == 1 ? (
+                                {status == 1 || status == 4 ? (
                                     <View style={{ height: '100%', width: '100%' }}>
                                         <View
                                             style={{

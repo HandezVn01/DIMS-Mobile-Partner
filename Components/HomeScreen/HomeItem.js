@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import React, { useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
@@ -28,21 +28,21 @@ const HomeItem = ({ title, icon, backgroundColor, index }) => {
                     .then((data) => {
                         go(data);
                     })
-                    .catch((err) => console.log(err));
+                    .catch((err) => Alert.alert('Error !', 'Server is error ! Please contact with Support !'));
             }
             if (index == 2) {
                 await RoomStatusAPI.GetStatusSearch(hotelId, 1, token)
                     .then((data) => {
                         go(data);
                     })
-                    .catch((err) => console.log(err));
+                    .catch((err) => Alert.alert('Error !', 'Server is error ! Please contact with Support !'));
             }
             if (index == 3) {
                 await RoomStatusAPI.GetStatusCheckOut(hotelId, token)
                     .then((data) => {
                         go(data);
                     })
-                    .catch((err) => console.log(err));
+                    .catch((err) => Alert.alert('Error !', 'Server is error ! Please contact with Support !'));
             }
             dispatch(dispatchSuccess());
         };

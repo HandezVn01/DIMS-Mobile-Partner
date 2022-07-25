@@ -213,9 +213,7 @@ const ViewStatusRoom = ({ route }) => {
                                                                             ? '#E31717'
                                                                             : data.allStatus == 1
                                                                             ? '#000'
-                                                                            : data.bookedStatus != null
-                                                                            ? '#F9A000'
-                                                                            : '#000'
+                                                                            : '#F9A000'
                                                                     }
                                                                 ></Icon>
                                                                 <Text>{data.roomName}</Text>

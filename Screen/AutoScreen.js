@@ -5,6 +5,8 @@ import * as RoomApi from '../Api/RoomApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { dispatchFecth, dispatchLogout, dispatchSuccess } from '../redux/actions/authAction';
 import Customer from '../Components/RoomScreen/Customer';
+import { Audio } from 'expo-av';
+import { ScrollView } from 'react-native';
 export default function AutoScreen() {
     const dispatch = useDispatch();
     const hotelId = useSelector((state) => state.auth.hoteiId);
@@ -14,6 +16,7 @@ export default function AutoScreen() {
     const [list2, setList2] = useState([]);
     const [bookingId, setBookingId] = useState('');
     const [scanned, setScanned] = useState(false);
+    const [sound, setSound] = React.useState();
     let count = 0;
     const [hasPermission, setHasPermission] = useState(null);
     async function playSound() {
@@ -31,40 +34,38 @@ export default function AutoScreen() {
     const [showScanCCCD, setShowScanCCCD] = useState(false);
     const [flag, setFlag] = useState(false);
     const handleBarCodeScanned = ({ type, data }) => {
-        setScanned(true);
-        console.log(data);
-        if (!showScanCCCD) {
-            alert(`${data}`);
-            dispatch(dispatchFecth());
-            RoomApi.CheckInAuto(hotelId, data, token)
-                .then((result) => {
-                    alert('Mã phòng của bạn hợp lệ . Vui lòng show cccd của bạn để hoàn thành thủ tục Check In !');
-                    setFlag(true);
-                    setBookingId(result.bookingId);
-                    setShowScanCCCD(true);
-                    count = 0;
-                    setScanned(false);
-                })
-                .catch((err) => (count = 0))
-                .finally(() => dispatch(dispatchSuccess()));
-            setDataTmp(datatmp);
-        }
-        if (showScanCCCD) {
-            if (data !== datatmp) {
-                alert(`${data}`);
-                setDataTmp(data);
-                const value = data.split('|');
-                const new_data = {
-                    userName: value[2],
-                    userSex: value[4],
-                    userIdCard: value[0],
-                    userBirthday: value[3],
-                    userAddress: value[5],
-                };
+        if (data !== datatmp) {
+            alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+            setDataTmp(data);
 
-                setList([...list, new_data]);
-                setList2([...list2, `${value[5]}|${value[3]}|${value[0]}|${value[2]}|${value[4]}`]);
+            if (!showScanCCCD) {
                 playSound();
+                dispatch(dispatchFecth());
+                RoomApi.CheckInAuto(hotelId, data, token)
+                    .then((result) => {
+                        alert('Mã phòng của bạn hợp lệ . Vui lòng show cccd của bạn để hoàn thành thủ tục Check In !');
+                        setFlag(true);
+                        setBookingId(result.bookingId);
+                        setShowScanCCCD(true);
+                        count = 0;
+                    })
+                    .catch((err) => (count = 0))
+                    .finally(() => dispatch(dispatchSuccess()));
+            } else {
+                if (showScanCCCD) {
+                    const value = data.split('|');
+                    const new_data = {
+                        userName: value[2],
+                        userSex: value[4],
+                        userIdCard: value[0],
+                        userBirthday: value[3],
+                        userAddress: value[5],
+                    };
+
+                    setList([...list, new_data]);
+                    setList2([...list2, `${value[5]}|${value[3]}|${value[0]}|${value[2]}|${value[4]}`]);
+                    playSound();
+                }
             }
         }
     };
@@ -118,60 +119,76 @@ export default function AutoScreen() {
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
                 <Text>Check In Auto</Text>
             </View>
-            <View style={{ flex: 5 }}>
+            <View style={{ flex: 9 }}>
                 {hasPermission === null ? (
                     <Text>Requesting for camera permission</Text>
                 ) : hasPermission === false ? (
                     <Text onPress={() => setHasPermission(true)}>Open Camera</Text>
                 ) : (
-                    <BarCodeScanner
-                        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-                        style={StyleSheet.absoluteFillObject}
-                    />
+                    <>
+                        <BarCodeScanner onBarCodeScanned={handleBarCodeScanned} style={StyleSheet.absoluteFillObject} />
+                        {showScanCCCD ? (
+                            <View style={{ height: '100%', justifyContent: 'flex-end' }}>
+                                <View style={{ height: '50%', backgroundColor: 'white' }}>
+                                    <View
+                                        style={{
+                                            height: 30,
+                                            width: '100%',
+                                            alignItems: 'center',
+                                            flexDirection: 'row',
+                                            borderBottomColor: '#938D8D',
+                                            borderBottomWidth: 1,
+                                        }}
+                                    >
+                                        <Text
+                                            style={{
+                                                fontSize: 16,
+                                                fontWeight: '500',
+                                                color: '#3DC5B5',
+                                            }}
+                                        >
+                                            Customer List
+                                        </Text>
+                                    </View>
+                                    <ScrollView style={{ paddingLeft: 10, paddingRight: 10 }}>
+                                        <View style={{ width: '100%', alignItems: 'center' }}>
+                                            <TouchableOpacity
+                                                onPress={() => handleModifyAddCustomer()}
+                                                style={{
+                                                    padding: 10,
+                                                    backgroundColor: '#2EC4B6',
+                                                    width: 100,
+                                                    borderRadius: 10,
+                                                    alignItems: 'center',
+                                                }}
+                                            >
+                                                <View>
+                                                    <Text style={{ fontSize: 14, fontWeight: '500', color: 'white' }}>
+                                                        Submit
+                                                    </Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        </View>
+                                        {list.map((customer, index) => {
+                                            return (
+                                                <Customer
+                                                    index={index + 1}
+                                                    name={customer.userName}
+                                                    cccd={customer.userIdCard}
+                                                    key={index}
+                                                    removeitem={() => removeItemHandle({ indexList: index })}
+                                                ></Customer>
+                                            );
+                                        })}
+                                    </ScrollView>
+                                </View>
+                            </View>
+                        ) : (
+                            <></>
+                        )}
+                    </>
                 )}
             </View>
-            {showScanCCCD ? (
-                <View style={{ flex: 4 }}>
-                    <View
-                        style={{
-                            height: 30,
-                            width: '100%',
-                            alignItems: 'center',
-                            flexDirection: 'row',
-                            borderBottomColor: '#938D8D',
-                            borderBottomWidth: 1,
-                        }}
-                    >
-                        <Text
-                            style={{
-                                fontSize: 16,
-                                fontWeight: '500',
-                                color: '#3DC5B5',
-                            }}
-                        >
-                            Customer List
-                        </Text>
-                        <TouchableOpacity onPress={() => handleModifyAddCustomer()}>
-                            <View>
-                                <Text>Submit</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                    {list.map((customer, index) => {
-                        return (
-                            <Customer
-                                index={index + 1}
-                                name={customer.userName}
-                                cccd={customer.userIdCard}
-                                key={index}
-                                removeitem={() => removeItemHandle({ indexList: index })}
-                            ></Customer>
-                        );
-                    })}
-                </View>
-            ) : (
-                <></>
-            )}
         </SafeAreaView>
     );
 }

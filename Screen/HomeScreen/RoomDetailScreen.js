@@ -293,7 +293,7 @@ const RoomDetailScreen = ({ route }) => {
         itemListUse.forEach((item) => {
             sum = sum + item.itemPrice * item.quantity;
         });
-        setTotal(totalTmp + sum + extraFee);
+        setTotal(totalTmp + sum + parseInt(extraFee || 0));
     };
     useEffect(() => {
         let sum = 0;
@@ -357,6 +357,7 @@ const RoomDetailScreen = ({ route }) => {
                             },
                         ]);
                         setExtraFee(0);
+                        setReasonExtra('');
                     })
                     .catch((err) => {
                         console.log(err);
@@ -467,6 +468,7 @@ const RoomDetailScreen = ({ route }) => {
                                         borderRadius: 24,
                                         paddingLeft: 15,
                                     }}
+                                    value={extraFee}
                                     placeholder={'Extra Fee'}
                                     keyboardType={'numeric'}
                                     onChangeText={(e) => setExtraFee(e)}
@@ -490,6 +492,7 @@ const RoomDetailScreen = ({ route }) => {
                                         borderRadius: 24,
                                         paddingLeft: 15,
                                     }}
+                                    value={reasonExtra}
                                     placeholder={'Reason of Extra Fee '}
                                     onChangeText={(e) => setReasonExtra(e)}
                                 ></TextInput>
@@ -866,6 +869,7 @@ const RoomDetailScreen = ({ route }) => {
                                                             borderRadius: 20,
                                                             paddingLeft: 15,
                                                         }}
+                                                        value={extraFee}
                                                         keyboardType="numeric"
                                                         onChangeText={(e) => setExtraFee(e)}
                                                     ></TextInput>
@@ -888,6 +892,7 @@ const RoomDetailScreen = ({ route }) => {
                                                             borderRadius: 24,
                                                             paddingLeft: 15,
                                                         }}
+                                                        value={reasonExtra}
                                                         placeholder={'Reason of Extra Fee '}
                                                         onChangeText={(e) => setReasonExtra(e)}
                                                     ></TextInput>
@@ -903,7 +908,7 @@ const RoomDetailScreen = ({ route }) => {
                                                                 itemPrice={item.itemPrice}
                                                                 itemType={item.itemType}
                                                                 itemUse={item.quantity}
-                                                                key={`${index}`}
+                                                                key={`${index}+${item.itemid}`}
                                                                 handleSum={(e) =>
                                                                     handleSumTotal({
                                                                         quantity: e,

@@ -53,7 +53,7 @@ const RoomDetailScreen = ({ route }) => {
     // Create State for Check In
     const [isPayment, setisPayment] = useState(false);
     const [totalNight, setTotalNight] = useState(1);
-    const [totalPrice, setTotalPrice] = useState(100);
+    const [totalPrice, setTotalPrice] = useState(10000);
     const [deposit, setDeposit] = useState(0);
     const [userEmail, setUserEmail] = useState('');
     // Create State for Add ExtraFee
@@ -62,7 +62,8 @@ const RoomDetailScreen = ({ route }) => {
     // API Get Data
     const checkoutShowRef = useRef(new Animated.Value(0)).current;
     const [total, setTotal] = useState(parseInt(data.totalPrice) - parseInt(data.deposit));
-    const totalTmp = data.paymentCondition === 'True' ? 0 : parseInt(data.totalPrice) - parseInt(data.deposit);
+    const totalTmp =
+        data.paymentCondition === 'True' ? 0 : parseInt(data.totalPrice - usedItem.extraFee) - parseInt(data.deposit);
     const checkInSuccess = async () => {
         await RoomApi.getRoomInfo(roomid, token)
             .then((result) => {
@@ -200,7 +201,7 @@ const RoomDetailScreen = ({ route }) => {
         ]);
         const checkout = async () => {
             dispatch(dispatchFecth());
-            handleSubmitUsedItem();
+            await handleSubmitUsedItem();
             await RoomApi.CheckOut(hotelId, data.bookingId, token)
                 .then((result) => {
                     Alert.alert('Success', 'Đã Check Out Thành Công!');
@@ -292,7 +293,7 @@ const RoomDetailScreen = ({ route }) => {
         itemListUse.forEach((item) => {
             sum = sum + item.itemPrice * item.quantity;
         });
-        setTotal(totalTmp + sum);
+        setTotal(totalTmp + sum + extraFee);
     };
     useEffect(() => {
         let sum = 0;
@@ -307,10 +308,10 @@ const RoomDetailScreen = ({ route }) => {
         setShowAddItem(true);
     };
     const handleSubmitUsedItem = () => {
-        setShowAddItem(!showAddItem);
+        setShowAddItem(false);
         let usedItem = [];
         itemListUse.map((item) => {
-            if (item.quantity > 0) {
+            if (item.quantity > 0 && item.itemid !== null) {
                 usedItem.push({
                     bookingDetailId: data.bookingDetailId,
                     menuId: item.itemid,
@@ -322,16 +323,15 @@ const RoomDetailScreen = ({ route }) => {
             try {
                 dispatch(dispatchFecth());
                 RoomApi.AddUsedItem(usedItem, token)
-                    .then((result) => console.log(result))
-                    .catch((err) => console.log(err.respones))
-                    .finally(() => dispatch(dispatchSuccess()));
+                    .then((result) => dispatch(dispatchSuccess()))
+                    .catch((err) => {
+                        console.log(err);
+                        dispatch(dispatchFailed());
+                    });
             } catch (error) {}
         }
         if (extraFee > 0) {
-            console.log(extraFee);
-            console.log(reasonExtra);
             try {
-                dispatch(dispatchFecth());
                 RoomApi.AddExtraFee(
                     [
                         {
@@ -632,10 +632,10 @@ const RoomDetailScreen = ({ route }) => {
                                     </Text>
                                 </View>
                                 <Text style={styles.card_content_text}>
-                                    TotalPrice:
+                                    RoomPrice:
                                     <Text style={styles.price_number}>
                                         <NumberFormat
-                                            value={data.totalPrice * 1000}
+                                            value={(data.totalPrice - usedItem.extraFee) * 1000}
                                             thousandSeparator={true}
                                             displayType={'text'}
                                             renderText={(value) => (

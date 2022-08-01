@@ -30,14 +30,18 @@ const ViewStatusRoom = ({ route }) => {
         } catch (error) {}
     };
     useEffect(() => {
+        let isApiSubscribed = true;
         const unsubscribe = navigation.addListener('focus', async () => {
             if (route.params.index === 1) {
                 await refreshData();
             }
         });
-        unsubscribe;
+        if (isApiSubscribed) {
+            unsubscribe;
+        }
+
         return () => {
-            console.log('return');
+            isApiSubscribed = false;
         };
     }, []);
     const handleRoom = async ({ roomName, status, roomId }) => {

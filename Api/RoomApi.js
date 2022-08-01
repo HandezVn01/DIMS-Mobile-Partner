@@ -107,12 +107,13 @@ export const CheckInRoom = async (
             email: userEmail,
             arrivalDate: today,
             totalNight: totalNight,
-            totalPrice: totalPrice,
+
             paymentCondition: isPayment,
             deposit: deposit,
             bookingDetails: [
                 {
                     roomId: roomId,
+                    totalRoomPrice: totalPrice,
                 },
             ],
             inboundUsersUnknow: customerlist,

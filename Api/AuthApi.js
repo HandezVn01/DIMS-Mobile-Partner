@@ -18,3 +18,18 @@ export const getAllHotel = async (token) => {
     });
     return res.data;
 };
+export const ForgotPassWord = async (email) => {
+    const res = await axios.post(`api/Auth/forgot-code-mail`, {
+        email: email,
+    });
+    return res.data;
+};
+export const SubmitChangeForgotPassWord = async (email, password, confirmPassword, unlockKey) => {
+    const res = await axios.post(`api/Auth/forgot-pass-change`, {
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword,
+        unlockKey: unlockKey,
+    });
+    return res.data;
+};

@@ -1,7 +1,7 @@
 import axios from 'axios';
-// const url = 'http://mydims.hopto.org/';
+
 export const LoginUser = async ({ email, password }) => {
-    const res = await axios.post(`/api/Auth/login-user`, { email, password });
+    const res = await axios.post(`api/Auth/login-Host`, { email, password });
     return res.data;
 };
 

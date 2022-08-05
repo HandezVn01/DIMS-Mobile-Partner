@@ -48,7 +48,19 @@ export default function LoginScreen({ route }) {
         return console.log(getAccount());
         // console.log(getAccount());
     }, []);
-
+    const [countDownDate, setCountDown] = useState(0);
+    const [isDone, setIsDone] = useState(false);
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCountDown(countDownDate - 1);
+        }, 1000);
+        console.log(countDownDate);
+        if (countDownDate === 0) {
+            clearInterval(interval);
+            setIsDone(true);
+        }
+        return () => clearInterval(interval);
+    }, [countDownDate]);
     const [props, getCellOnLayoutHandler] = useClearByFocusCell({
         value,
         setValue,
@@ -144,7 +156,7 @@ export default function LoginScreen({ route }) {
                 .then((e) => {
                     Alert.alert('Success !', 'Vui lòng kiểm tra email của bạn !');
                     setIsChangePassWord(true);
-                    console.log(e);
+                    setCountDown(60);
                 })
                 .catch((err) => {
                     Alert.alert(
@@ -270,6 +282,14 @@ export default function LoginScreen({ route }) {
                                     </Text>
                                 )}
                             />
+                            <View>
+                                <Text
+                                    style={styles.forgotpassword}
+                                    onPress={() => (countDownDate === 0 ? handleForgotPassWord() : undefined)}
+                                >
+                                    {countDownDate > 0 ? countDownDate + 's' : ''} Gửi lại
+                                </Text>
+                            </View>
                         </>
                     ) : (
                         <></>

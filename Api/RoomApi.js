@@ -124,6 +124,36 @@ export const CheckInRoom = async (
     );
     return res.data;
 };
+export const CheckInRooms = async (
+    listRoom,
+    hotelId,
+    totalNight,
+    userEmail,
+    isPayment,
+    deposit,
+    customerlist,
+    token,
+    userId,
+) => {
+    const res = await axios.post(
+        'api/HostManage/Host-Local-Payment-final',
+        {
+            hotelId: hotelId,
+            userId: userId,
+            email: userEmail,
+            arrivalDate: today,
+            totalNight: totalNight,
+            paymentCondition: isPayment,
+            deposit: deposit,
+            bookingDetails: listRoom,
+            inboundUsersUnknow: customerlist,
+        },
+        {
+            headers: { Authorization: `Bearer ${token}` },
+        },
+    );
+    return res.data;
+};
 export const CheckRoomDateBooking = async (hotelId, roomId, totalNight, token) => {
     const res = await axios.post(
         'api/HostManage/Check-Room-Date-Booking',

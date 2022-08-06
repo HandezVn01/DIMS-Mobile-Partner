@@ -8,10 +8,13 @@ import { dispatchFailed, dispatchFecth, dispatchSuccess } from '../../redux/acti
 import * as RoomApi from '../../Api/RoomApi';
 import { TextInput } from 'react-native-paper';
 import { Picker } from '@react-native-picker/picker';
+import InputCompunent from '../../Components/RoomScreen/CheckInNav/InputCompunent';
+import { Checkbox } from 'react-native-paper';
 var { width, height } = Dimensions.get('window');
 const ViewStatusRoom = ({ route }) => {
     const hotelId = useSelector((state) => state.auth.hoteiId);
     const token = useSelector((state) => state.auth.token);
+    const userId = useSelector((state) => state.auth.userId);
     const title = route.params.title;
     const navigation = useNavigation();
     const dispatch = useDispatch();
@@ -22,6 +25,13 @@ const ViewStatusRoom = ({ route }) => {
     const [totalNight, setTotalNight] = useState(1);
     const [searchRoom, setSearchRoom] = useState('');
     const [listBooking, setListBooking] = useState([]);
+    const [selectMore, setSelectMore] = useState(false);
+    const [listSelectMore, SetListSelectMore] = useState([]);
+    // Create State for Check In
+    const [isPayment, setisPayment] = useState(false);
+    const [totalPrice, setTotalPrice] = useState(10000);
+    const [deposit, setDeposit] = useState(0);
+    const [userEmail, setUserEmail] = useState('');
     const colorData = [
         '#0000FF',
         '#006400',
@@ -82,6 +92,7 @@ const ViewStatusRoom = ({ route }) => {
 
         return () => {
             isApiSubscribed = false;
+            console.log('done');
         };
     }, []);
     useEffect(() => {
@@ -116,6 +127,9 @@ const ViewStatusRoom = ({ route }) => {
         });
         const filtertmp = datatmp.filter((data) => data.count > 1);
         setListBooking(filtertmp);
+        return () => {
+            console.log('done');
+        };
     }, [datas]);
     const handleRoom = async ({ roomName, status, roomId }) => {
         const go = (data, usedItem) => {
@@ -218,7 +232,72 @@ const ViewStatusRoom = ({ route }) => {
         } else {
             setDatas(datatmp);
         }
+        return () => {
+            console.log('done');
+        };
     }, [searchRoom]);
+    const handleSelectMore = () => {
+        if (selectMore) {
+        }
+        setSelectMore(true);
+        const newData = datas.filter((e) => e.allStatus !== 2);
+        setDatas(newData);
+    };
+    const handleSelectMoreRoom = (roomId) => {
+        const filter = listSelectMore.filter((e) => e === roomId);
+        if (filter.length > 0) {
+            const newData = listSelectMore.filter((e) => e !== roomId);
+            SetListSelectMore(newData);
+            console.log(newData);
+        } else {
+            SetListSelectMore([...listSelectMore, roomId]);
+            console.log([...listSelectMore, roomId]);
+        }
+    };
+    const handleCancelSelectMore = () => {
+        setSelectMore(false);
+        setDatas(datatmp);
+        refreshData();
+    };
+    const handleSubmitSelectMore = () => {
+        if (listSelectMore.length > 1) {
+            setIsCheckIn(true);
+        } else {
+            Alert.alert(
+                'Warning !',
+                'Đây là tính năng check in nhiều phòng nên cần chọn ít nhất 2 phòng để thực hiện thao tác này .',
+            );
+        }
+    };
+    const [isCheckIn, setIsCheckIn] = useState(false);
+    const handleSubmitcheckIn = () => {
+        let listroom = [];
+        listSelectMore.forEach((e) => {
+            listroom.push({
+                roomId: e,
+                totalRoomPrice: totalPrice / listSelectMore.length,
+            });
+        });
+        console.log(listroom);
+        if (listroom.length > 0) {
+            dispatch(dispatchFecth());
+            RoomApi.CheckInRooms(listroom, hotelId, totalNight, userEmail, isPayment, deposit, [], token, userId)
+                .then((result) => {
+                    dispatch(dispatchSuccess());
+                    console.log(result);
+                    setDeposit(0);
+                    setUserEmail('');
+                    setIsCheckIn(!isCheckIn);
+                    setTotalPrice(0);
+                    setTotalNight(1);
+                    refreshData();
+                    setSelectMore(!selectMore);
+                })
+                .catch((err) => {
+                    console.log(err.response), dispatch(dispatchFailed());
+                });
+        }
+    };
     return (
         <View style={{ flex: 1, marginTop: 20 }}>
             <View style={styles.header}>
@@ -256,54 +335,110 @@ const ViewStatusRoom = ({ route }) => {
                                                         : data.categoryId === floor.id
                                                 ) {
                                                     return (
-                                                        <View key={data + index}>
+                                                        <View
+                                                            key={data + index}
+                                                            style={
+                                                                selectMore
+                                                                    ? listSelectMore.find((e) => e === data.roomId)
+                                                                        ? {
+                                                                              borderWidth: 1,
+                                                                              marginLeft: 10,
+                                                                              marginRight: 10,
+                                                                              borderColor: '#2EC4B6',
+                                                                          }
+                                                                        : {
+                                                                              borderWidth: 1,
+                                                                              marginLeft: 10,
+                                                                              marginRight: 10,
+                                                                          }
+                                                                    : { marginLeft: 5, marginRight: 5 }
+                                                            }
+                                                        >
+                                                            {selectMore ? (
+                                                                listSelectMore.find((e) => e === data.roomId) ? (
+                                                                    <Icon
+                                                                        name="checkbox-outline"
+                                                                        size={16}
+                                                                        style={{
+                                                                            position: 'absolute',
+                                                                            top: -10,
+                                                                            left: 0,
+                                                                            backgroundColor: '#F1F3F0',
+                                                                            color: '#2EC4B6',
+                                                                        }}
+                                                                    ></Icon>
+                                                                ) : (
+                                                                    <Icon
+                                                                        name="checkbox-blank-outline"
+                                                                        size={16}
+                                                                        style={{
+                                                                            position: 'absolute',
+                                                                            top: -10,
+                                                                            left: 0,
+                                                                            backgroundColor: '#F1F3F0',
+                                                                        }}
+                                                                    ></Icon>
+                                                                )
+                                                            ) : (
+                                                                <></>
+                                                            )}
+
                                                             <TouchableOpacity
                                                                 style={[
                                                                     {
-                                                                        paddingRight: 20,
-                                                                        paddingLeft: 20,
+                                                                        paddingRight: 15,
+                                                                        paddingLeft: 15,
                                                                         alignItems: 'center',
                                                                     },
                                                                 ]}
                                                                 onPress={() => {
-                                                                    let flag = true;
-                                                                    listBooking.map((e, indexBooking) => {
-                                                                        if (
-                                                                            e.bookingId === data.bookingId &&
-                                                                            e.count > 1 &&
-                                                                            e.bookingId !== null
-                                                                        ) {
-                                                                            handleGroup(e);
-                                                                            flag = false;
-                                                                        }
-                                                                    });
-                                                                    if (flag) {
-                                                                        if (data.allStatus == 3) {
-                                                                            Alert.alert(
-                                                                                `Confirm`,
-                                                                                `Bạn đã dọn xong phòng ${data.roomName} ?`,
-                                                                                [
-                                                                                    {
-                                                                                        text: 'Cancel',
+                                                                    if (!selectMore) {
+                                                                        let flag = true;
+                                                                        listBooking.map((e, indexBooking) => {
+                                                                            if (
+                                                                                e.bookingId === data.bookingId &&
+                                                                                e.count > 1 &&
+                                                                                e.bookingId !== null
+                                                                            ) {
+                                                                                handleGroup(e);
+                                                                                flag = false;
+                                                                            }
+                                                                        });
+                                                                        if (flag) {
+                                                                            if (data.allStatus == 3) {
+                                                                                Alert.alert(
+                                                                                    `Confirm`,
+                                                                                    `Bạn đã dọn xong phòng ${data.roomName} ?`,
+                                                                                    [
+                                                                                        {
+                                                                                            text: 'Cancel',
 
-                                                                                        style: 'cancel',
-                                                                                    },
-                                                                                    {
-                                                                                        text: 'OK',
-                                                                                        onPress: () => {
-                                                                                            handleCleanRoom(
-                                                                                                data.roomId,
-                                                                                            );
+                                                                                            style: 'cancel',
                                                                                         },
-                                                                                    },
-                                                                                ],
-                                                                            );
-                                                                        } else {
-                                                                            handleRoom({
-                                                                                roomName: data.roomName,
-                                                                                status: data.allStatus,
-                                                                                roomId: data.roomId,
-                                                                            });
+                                                                                        {
+                                                                                            text: 'OK',
+                                                                                            onPress: () => {
+                                                                                                handleCleanRoom(
+                                                                                                    data.roomId,
+                                                                                                );
+                                                                                            },
+                                                                                        },
+                                                                                    ],
+                                                                                );
+                                                                            } else {
+                                                                                handleRoom({
+                                                                                    roomName: data.roomName,
+                                                                                    status: data.allStatus,
+                                                                                    roomId: data.roomId,
+                                                                                });
+                                                                            }
+                                                                        }
+                                                                    } else {
+                                                                        if (
+                                                                            data.allStatus === 1 ||
+                                                                            data.allStatus === 3
+                                                                        ) {
+                                                                            handleSelectMoreRoom(data.roomId);
                                                                         }
                                                                     }
                                                                 }}
@@ -334,6 +469,7 @@ const ViewStatusRoom = ({ route }) => {
                                                                         );
                                                                     }
                                                                 })}
+
                                                                 <Icon
                                                                     name="home"
                                                                     size={24}
@@ -401,6 +537,60 @@ const ViewStatusRoom = ({ route }) => {
                     </View>
                 ) : (
                     <></>
+                )}
+            </View>
+            <View
+                style={{
+                    flex: 1,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                    marginBottom: 10,
+                }}
+            >
+                {selectMore ? (
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-around', width: '100%' }}>
+                        <TouchableOpacity
+                            style={{
+                                width: 120,
+                                height: 32,
+                                backgroundColor: '#d34127',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 10,
+                            }}
+                            onPress={() => handleCancelSelectMore()}
+                        >
+                            <Text style={{ fontSize: 14, fontWeight: '500', color: 'white' }}>Cancel</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={{
+                                width: 120,
+                                height: 32,
+                                backgroundColor: '#0d6efd',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: 10,
+                            }}
+                            onPress={() => handleSubmitSelectMore()}
+                        >
+                            <Text style={{ fontSize: 14, fontWeight: '500', color: 'white' }}>Check In</Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <TouchableOpacity
+                        style={{
+                            width: 140,
+                            height: 32,
+                            backgroundColor: '#0d6efd',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 10,
+                        }}
+                        onPress={() => handleSelectMore()}
+                    >
+                        <Text style={{ fontSize: 14, fontWeight: '500', color: 'white' }}>Chọn nhiều phòng</Text>
+                    </TouchableOpacity>
                 )}
             </View>
             <View style={styles.search}>
@@ -504,11 +694,181 @@ const ViewStatusRoom = ({ route }) => {
                     <></>
                 )}
             </View>
+            <View
+                style={{
+                    position: 'absolute',
+                    height: height - ((height * 2) / 20 + (Platform.OS === 'android' ? 210 : 270)),
+                    width: width,
+                    bottom: 0,
+                }}
+            >
+                {isCheckIn ? (
+                    <View
+                        style={{
+                            height: '100%',
+                            width: '100%',
+                            position: 'absolute',
+                            backgroundColor: '#fff',
+                            borderColor: '#3DC5B5',
+                            borderWidth: 2,
+                            borderTopRightRadius: 15,
+                            borderTopLeftRadius: 15,
+                            borderBottomWidth: 0,
+                            flex: 1,
+                        }}
+                    >
+                        <View style={{ height: '100%', width: '100%' }}>
+                            <View
+                                style={{
+                                    padding: 10,
+                                    paddingRight: 20,
+                                    paddingLeft: 20,
+                                    borderBottomColor: '#D5F3F0',
+                                    borderBottomWidth: 1,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    flex: 1,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        fontSize: 18,
+                                        fontWeight: '600',
+                                    }}
+                                >
+                                    Check In
+                                </Text>
+                                <Text>
+                                    <TouchableOpacity onPress={() => setIsCheckIn(!isCheckIn)}>
+                                        <Icon name="close-outline" size={24}></Icon>
+                                    </TouchableOpacity>
+                                </Text>
+                            </View>
+                            <View style={{ flex: 9 }}>
+                                <ScrollView
+                                    style={{
+                                        height: '100%',
+                                        width: '100%',
+                                        paddingTop: 5,
+                                        paddingLeft: 15,
+                                        paddingRight: 20,
+                                    }}
+                                >
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <Text style={styles.fontText}>Total Night:</Text>
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                marginLeft: 30,
+                                            }}
+                                        >
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    totalNight > 1 ? setTotalNight(totalNight - 1) : '';
+                                                }}
+                                            >
+                                                <Icon name="arrow-down" size={36}></Icon>
+                                            </TouchableOpacity>
+                                            <TextInput
+                                                style={{
+                                                    height: 40,
+                                                    width: 60,
+                                                    borderRadius: 20,
+                                                    borderColor: '#000',
+                                                    borderWidth: 1,
+                                                    textAlign: 'center',
+                                                }}
+                                                keyboardType="numeric"
+                                                defaultValue={`${totalNight}`}
+                                                value={`${totalNight}`}
+                                                onChangeText={(e) => {
+                                                    setTotalNight(e);
+                                                }}
+                                                onBlur={() => {
+                                                    if (totalNight < 1) {
+                                                        setTotalNight(1);
+                                                    }
+                                                }}
+                                            ></TextInput>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    setTotalNight(totalNight + 1);
+                                                }}
+                                            >
+                                                <Icon name="arrow-up" size={36}></Icon>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                    <InputCompunent
+                                        title={'Tổng Tiền Phòng'}
+                                        placeholder={'Example : 200'}
+                                        sub={'VNĐ'}
+                                        keyboardType="numeric"
+                                        setInput={setTotalPrice}
+                                    ></InputCompunent>
+                                    <InputCompunent
+                                        title={'Email:'}
+                                        placeholder={'Email of customer'}
+                                        sub={''}
+                                        setInput={setUserEmail}
+                                    ></InputCompunent>
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                        }}
+                                    >
+                                        <Checkbox
+                                            status={isPayment ? 'checked' : 'unchecked'}
+                                            onPress={() => setisPayment(!isPayment)}
+                                        ></Checkbox>
+                                        <Text style={styles.fontText}>Đã Thanh Toán</Text>
+                                    </View>
+                                    <InputCompunent
+                                        title={'Đã Nhận'}
+                                        placeholder={'Số Tiền Đã Nhận'}
+                                        sub={'VNĐ'}
+                                        setInput={setDeposit}
+                                        keyboardType={'numeric'}
+                                    ></InputCompunent>
+                                    <View style={{ width: '100%', alignItems: 'center' }}>
+                                        <TouchableOpacity
+                                            style={{
+                                                width: 160,
+                                                height: 38,
+                                                backgroundColor: '#2EC4B6',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                borderRadius: 10,
+                                                marginBottom: 10,
+                                            }}
+                                            onPress={() => handleSubmitcheckIn()}
+                                        >
+                                            <Text style={{ color: 'white', fontSize: 16, fontWeight: '600' }}>
+                                                Submit
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </ScrollView>
+                            </View>
+                        </View>
+                    </View>
+                ) : (
+                    <></>
+                )}
+            </View>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
+    fontText: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
     search: {
         flex: 1,
         borderTopColor: '#3DC5B5',

@@ -84,6 +84,7 @@ const GroupBookingScreen = ({ route }) => {
     const [extraFee, setExtraFee] = useState(0);
     const [reasonExtra, setReasonExtra] = useState('');
     const [RoomsPrice, setRoomsPrice] = useState('');
+
     const AddItem = (data, bookingDetailId) => {
         // console.log(data);
         const newlist = getItemList(data);
@@ -93,7 +94,9 @@ const GroupBookingScreen = ({ route }) => {
     };
     useEffect(() => {
         getInfo();
-        return console.log('hello');
+        return () => {
+            console.log('done');
+        };
     }, []);
     const [sound, setSound] = React.useState();
     async function playSound() {
@@ -307,7 +310,7 @@ const GroupBookingScreen = ({ route }) => {
                                                 itemPrice={item.itemPrice}
                                                 itemType={item.itemType}
                                                 itemUse={item.quantity}
-                                                key={`a${index}`}
+                                                key={`a${index}b`}
                                                 handleSum={(e) =>
                                                     handleSumTotal({
                                                         quantity: e,
@@ -455,7 +458,12 @@ const GroupBookingScreen = ({ route }) => {
 
                                                 {params.roomId.map((e, index) => {
                                                     if (e == item.roomId) {
-                                                        return <Text> {params.roomName[index]}</Text>;
+                                                        return (
+                                                            <Text key={`asdasdasd${index}`}>
+                                                                {' '}
+                                                                {params.roomName[index]}
+                                                            </Text>
+                                                        );
                                                     }
                                                 })}
                                             </TouchableOpacity>

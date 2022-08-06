@@ -45,16 +45,11 @@ const RoomDetailScreen = ({ route }) => {
     const [changeState, setChangeState] = useState(false);
     // Get infomation from params
     const roomName = route.params.roomName;
-    const status = route.params.status;
+    const [status, setStatus] = useState(route.params.status);
     const roomid = route.params.roomId;
     const [data, setData] = useState(route.params.data);
     const [usedItem, setUsedItem] = useState(route.params.usedItem || []);
     const MenuList = useState(useSelector((state) => state.menuReducer.data) || []);
-    const getData = () => {
-        RoomApi.getRoomInfo(roomid, token).then((result) => {
-            setData(result);
-        });
-    };
     // Create State for Check In
     const [isPayment, setisPayment] = useState(false);
     const [totalNight, setTotalNight] = useState(1);
@@ -72,6 +67,7 @@ const RoomDetailScreen = ({ route }) => {
     const checkInSuccess = async () => {
         await RoomApi.getRoomInfo(roomid, token)
             .then((result) => {
+                console.log(result);
                 setData(result);
             })
             .catch((err) => {});
@@ -192,6 +188,7 @@ const RoomDetailScreen = ({ route }) => {
             .then((result) => {
                 Alert.alert('Success', 'Checkin Success');
                 checkInSuccess();
+                setStatus(2);
             })
             .catch((errors) => {});
         dispatch(dispatchSuccess());

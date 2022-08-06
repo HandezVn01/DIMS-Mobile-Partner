@@ -16,9 +16,11 @@ const ViewStatusRoom = ({ route }) => {
     const navigation = useNavigation();
     const dispatch = useDispatch();
     const [datas, setDatas] = useState(route.params.data);
+    const [datatmp, setDatatmp] = useState(route.params.data);
     let today = new Date();
     let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
     const [totalNight, setTotalNight] = useState(1);
+    const [searchRoom, setSearchRoom] = useState('');
     const refreshData = async () => {
         try {
             await RoomApi.GetAllStatus(hotelId, token)
@@ -135,6 +137,14 @@ const ViewStatusRoom = ({ route }) => {
     const handleFilterCategory = () => {
         setFilterFloor(false);
     };
+    useEffect(() => {
+        if (searchRoom.length > 0) {
+            const news = datatmp.filter((e) => e.roomName.match(searchRoom));
+            setDatas(news);
+        } else {
+            setDatas(datatmp);
+        }
+    }, [searchRoom]);
     return (
         <View style={{ flex: 1, marginTop: 20 }}>
             <View style={styles.header}>
@@ -276,6 +286,16 @@ const ViewStatusRoom = ({ route }) => {
                     <></>
                 )}
             </View>
+            <View style={styles.search}>
+                <TextInput
+                    mode="outlined"
+                    label="Search"
+                    right={<TextInput.Icon name="magnify" />}
+                    style={{ width: '80%', height: 24, top: -3 }}
+                    value={searchRoom}
+                    onChangeText={(e) => setSearchRoom(e)}
+                ></TextInput>
+            </View>
             <View style={styles.footer}>
                 {route.params.index === 2 ? (
                     <View
@@ -372,6 +392,12 @@ const ViewStatusRoom = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+    search: {
+        flex: 1,
+        borderTopColor: '#3DC5B5',
+        borderTopWidth: 1,
+        alignItems: 'center',
+    },
     header: { flex: 3, flexDirection: 'row', alignItems: 'center', marginLeft: 20 },
     header_title: {
         fontWeight: '600',
@@ -381,7 +407,7 @@ const styles = StyleSheet.create({
         marginLeft: 15,
     },
     container: {
-        flex: 15,
+        flex: 14,
     },
     footer: {
         flex: 2,

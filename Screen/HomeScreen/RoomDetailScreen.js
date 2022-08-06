@@ -50,6 +50,11 @@ const RoomDetailScreen = ({ route }) => {
     const [data, setData] = useState(route.params.data);
     const [usedItem, setUsedItem] = useState(route.params.usedItem || []);
     const MenuList = useState(useSelector((state) => state.menuReducer.data) || []);
+    const getData = () => {
+        RoomApi.getRoomInfo(roomid, token).then((result) => {
+            setData(result);
+        });
+    };
     // Create State for Check In
     const [isPayment, setisPayment] = useState(false);
     const [totalNight, setTotalNight] = useState(1);
@@ -237,9 +242,7 @@ const RoomDetailScreen = ({ route }) => {
         setHasPermission(!hasPermission);
     };
     const handleModifyAddCustomer = async () => {
-        console.log(list2);
         dispatch(dispatchFecth());
-        console.log(data.bookingId);
         await RoomApi.updateCustomerInBooking(hotelId, data.bookingId, list2, token)
             .then((result) => {
                 Alert.alert('Update Success!');
@@ -311,7 +314,7 @@ const RoomDetailScreen = ({ route }) => {
         setShowAddItem(false);
         let usedItem = [];
         itemListUse.map((item) => {
-            if (item.quantity > 0 && item.itemid !== null) {
+            if (item.itemid !== null) {
                 usedItem.push({
                     bookingDetailId: data.bookingDetailId,
                     menuId: item.itemid,

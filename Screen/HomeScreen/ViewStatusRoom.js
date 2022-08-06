@@ -21,6 +21,44 @@ const ViewStatusRoom = ({ route }) => {
     let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
     const [totalNight, setTotalNight] = useState(1);
     const [searchRoom, setSearchRoom] = useState('');
+    const [listBooking, setListBooking] = useState([]);
+    const colorData = [
+        '#0000FF',
+        '#006400',
+        '#FF6600',
+        '#FFFF00',
+        '#A020F0',
+        '#C0C0C0',
+        '#964B00',
+        '#808080',
+        '#FFC0CB',
+        '#808000',
+        '#800000',
+        '#8F00FF',
+        '#36454F',
+        '#FF00FF',
+        '#CD7F32',
+        '#FFFDD0',
+        '#FFD700',
+        '#D2B48C',
+        '#008080',
+        '#FFDB58',
+        '#000080',
+        '#FF7F50',
+        '#800020',
+        '#E6E6FA',
+        '#E0b0FF',
+        '#FFE5B4',
+        '#B7410E',
+        '#4B0082',
+        '#E0115F',
+        '#CC7357',
+        '#00FFFF',
+        '#007FFF',
+        '#F5F5DC',
+        '#FAF9F6',
+        '#FFBF00',
+    ];
     const refreshData = async () => {
         try {
             await RoomApi.GetAllStatus(hotelId, token)
@@ -46,6 +84,39 @@ const ViewStatusRoom = ({ route }) => {
             isApiSubscribed = false;
         };
     }, []);
+    useEffect(() => {
+        let datatmp = [];
+        datas.forEach((element) => {
+            if (datatmp.length < 1) {
+                datatmp.push({
+                    bookingId: element.bookingId,
+                    count: 1,
+                    roomId: [element.roomId],
+                    roomName: [element.roomName],
+                });
+            } else {
+                let flag = true;
+                datatmp.forEach((data) => {
+                    if (data.bookingId === element.bookingId) {
+                        data.count = data.count + 1;
+                        data.roomId = [...data.roomId, element.roomId];
+                        data.roomName = [...data.roomName, element.roomName];
+                        flag = false;
+                    }
+                });
+                if (flag) {
+                    datatmp.push({
+                        bookingId: element.bookingId,
+                        count: 1,
+                        roomId: [element.roomId],
+                        roomName: [element.roomName],
+                    });
+                }
+            }
+        });
+        const filtertmp = datatmp.filter((data) => data.count > 1);
+        setListBooking(filtertmp);
+    }, [datas]);
     const handleRoom = async ({ roomName, status, roomId }) => {
         const go = (data, usedItem) => {
             navigation.navigate('RoomDetail', {
@@ -76,7 +147,10 @@ const ViewStatusRoom = ({ route }) => {
             go();
         }
     };
-
+    const handleGroup = (e) => {
+        console.log(e);
+        navigation.navigate('GroupBookingeScreen', e);
+    };
     const removeDulicate = (arr) => {
         const uniqueIds = [];
         const unique = arr.filter((element) => {
@@ -184,39 +258,82 @@ const ViewStatusRoom = ({ route }) => {
                                                     return (
                                                         <View key={data + index}>
                                                             <TouchableOpacity
-                                                                style={{
-                                                                    paddingRight: 20,
-                                                                    paddingLeft: 20,
-                                                                    alignItems: 'center',
-                                                                }}
+                                                                style={[
+                                                                    {
+                                                                        paddingRight: 20,
+                                                                        paddingLeft: 20,
+                                                                        alignItems: 'center',
+                                                                    },
+                                                                ]}
                                                                 onPress={() => {
-                                                                    if (data.allStatus == 3) {
-                                                                        Alert.alert(
-                                                                            `Confirm`,
-                                                                            `Bạn đã dọn xong phòng ${data.roomName} ?`,
-                                                                            [
-                                                                                {
-                                                                                    text: 'Cancel',
+                                                                    let flag = true;
+                                                                    listBooking.map((e, indexBooking) => {
+                                                                        if (
+                                                                            e.bookingId === data.bookingId &&
+                                                                            e.count > 1 &&
+                                                                            e.bookingId !== null
+                                                                        ) {
+                                                                            handleGroup(e);
+                                                                            flag = false;
+                                                                        }
+                                                                    });
+                                                                    if (flag) {
+                                                                        if (data.allStatus == 3) {
+                                                                            Alert.alert(
+                                                                                `Confirm`,
+                                                                                `Bạn đã dọn xong phòng ${data.roomName} ?`,
+                                                                                [
+                                                                                    {
+                                                                                        text: 'Cancel',
 
-                                                                                    style: 'cancel',
-                                                                                },
-                                                                                {
-                                                                                    text: 'OK',
-                                                                                    onPress: () => {
-                                                                                        handleCleanRoom(data.roomId);
+                                                                                        style: 'cancel',
                                                                                     },
-                                                                                },
-                                                                            ],
-                                                                        );
-                                                                    } else {
-                                                                        handleRoom({
-                                                                            roomName: data.roomName,
-                                                                            status: data.allStatus,
-                                                                            roomId: data.roomId,
-                                                                        });
+                                                                                    {
+                                                                                        text: 'OK',
+                                                                                        onPress: () => {
+                                                                                            handleCleanRoom(
+                                                                                                data.roomId,
+                                                                                            );
+                                                                                        },
+                                                                                    },
+                                                                                ],
+                                                                            );
+                                                                        } else {
+                                                                            handleRoom({
+                                                                                roomName: data.roomName,
+                                                                                status: data.allStatus,
+                                                                                roomId: data.roomId,
+                                                                            });
+                                                                        }
                                                                     }
                                                                 }}
                                                             >
+                                                                {listBooking.map((e, indexBooking) => {
+                                                                    if (
+                                                                        e.bookingId === data.bookingId &&
+                                                                        e.count > 1 &&
+                                                                        e.bookingId !== null
+                                                                    ) {
+                                                                        return (
+                                                                            <View
+                                                                                style={{
+                                                                                    position: 'absolute',
+                                                                                    top: 0,
+                                                                                    right: 5,
+                                                                                }}
+                                                                                key={`${e.bookingId}-${index}`}
+                                                                            >
+                                                                                <Icon
+                                                                                    name="bookmark"
+                                                                                    size={16}
+                                                                                    style={{
+                                                                                        color: colorData[indexBooking],
+                                                                                    }}
+                                                                                ></Icon>
+                                                                            </View>
+                                                                        );
+                                                                    }
+                                                                })}
                                                                 <Icon
                                                                     name="home"
                                                                     size={24}
@@ -397,6 +514,8 @@ const styles = StyleSheet.create({
         borderTopColor: '#3DC5B5',
         borderTopWidth: 1,
         alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
     },
     header: { flex: 3, flexDirection: 'row', alignItems: 'center', marginLeft: 20 },
     header_title: {

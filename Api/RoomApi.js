@@ -187,3 +187,9 @@ export const GetStatusSearch = async (hotelId, totalNight, token) => {
     });
     return res.data;
 };
+export const GetBookingInfo = async (bookingId, token) => {
+    const res = await axios.get(`api/HostManage/Get-A-Book-Full-Detail?bookingID=${bookingId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data;
+};

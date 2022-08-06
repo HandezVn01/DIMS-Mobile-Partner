@@ -24,6 +24,7 @@ import PersonalScreen from '../Screen/ProfileScreen/PersonalScreen';
 import RoomService from '../Screen/ProfileScreen/RoomService';
 import SupportScreen from '../Screen/ProfileScreen/SupportScreen';
 import ProfileScreen from '../Screen/ProfileScreen';
+import GroupBookingScreen from '../Screen/HomeScreen/GroupBookingScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -73,6 +74,7 @@ const Navigation = () => {
                 <Stack.Screen name="Help" component={SupportScreen}></Stack.Screen>
                 <Stack.Screen name="AutoScreen" component={AutoScreen}></Stack.Screen>
                 <Stack.Screen name="ProfileScreen" component={ProfileScreen}></Stack.Screen>
+                <Stack.Screen name="GroupBookingeScreen" component={GroupBookingScreen}></Stack.Screen>
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -53,9 +53,15 @@ const RoomDetailScreen = ({ route }) => {
     // Create State for Check In
     const [isPayment, setisPayment] = useState(false);
     const [totalNight, setTotalNight] = useState(1);
-    const [totalPrice, setTotalPrice] = useState(10000);
+    const [totalPrice, setTotalPrice] = useState(0);
     const [deposit, setDeposit] = useState(0);
     const [userEmail, setUserEmail] = useState('');
+    useEffect(() => {
+        const tmp = totalNight.toString();
+        if (tmp.includes('NaN')) {
+            setTotalNight(1);
+        }
+    }, [totalNight]);
     // Create State for Add ExtraFee
     const [extraFee, setExtraFee] = useState(0);
     const [reasonExtra, setReasonExtra] = useState('');
@@ -152,6 +158,10 @@ const RoomDetailScreen = ({ route }) => {
         let alertStatus = false;
         let alertMsg = '';
         let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
+        if (totalPrice < 50) {
+            alertStatus = true;
+            alertMsg = alertMsg + 'Có vẻ số tiền bạn nhập đã bị sai \n';
+        }
         if (userEmail.length < 1) {
             alertStatus = true;
             alertMsg = alertMsg + 'Email is Empty ! \n Please input Email for customer receive key qr code ! \n';
@@ -234,6 +244,10 @@ const RoomDetailScreen = ({ route }) => {
         (async () => {
             const { status } = await Camera.requestCameraPermissionsAsync();
         })();
+        return () => {
+            console.log('Out Room');
+            setHasPermission(false);
+        };
     }, []);
     const handleAddCustomer = () => {
         setHasPermission(!hasPermission);
@@ -638,7 +652,7 @@ const RoomDetailScreen = ({ route }) => {
                                     RoomPrice:
                                     <Text style={styles.price_number}>
                                         <NumberFormat
-                                            value={(data.totalPrice - usedItem.extraFee) * 1000}
+                                            value={(data.totalPrice - usedItem.extraFee || data.totalPrice) * 1000}
                                             thousandSeparator={true}
                                             displayType={'text'}
                                             renderText={(value) => (
@@ -759,7 +773,7 @@ const RoomDetailScreen = ({ route }) => {
                                                             defaultValue={`${totalNight}`}
                                                             value={`${totalNight}`}
                                                             onChangeText={(e) => {
-                                                                setTotalNight(e);
+                                                                setTotalNight(parseInt(e));
                                                             }}
                                                             onBlur={() => {
                                                                 if (totalNight < 1) {

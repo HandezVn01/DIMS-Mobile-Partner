@@ -96,6 +96,15 @@ const ViewStatusRoom = ({ route }) => {
         };
     }, []);
     useEffect(() => {
+        const tmp = totalNight.toString();
+        if (tmp.includes('NaN')) {
+            setTotalNight(1);
+        }
+        return () => {
+            console.log('ViewStatus Off');
+        };
+    }, [totalNight]);
+    useEffect(() => {
         let datatmp = [];
         datas.forEach((element) => {
             if (datatmp.length < 1) {
@@ -700,6 +709,7 @@ const ViewStatusRoom = ({ route }) => {
                     height: height - ((height * 2) / 20 + (Platform.OS === 'android' ? 210 : 270)),
                     width: width,
                     bottom: 0,
+                    zIndex: isCheckIn ? 1 : -100,
                 }}
             >
                 {isCheckIn ? (
@@ -766,7 +776,7 @@ const ViewStatusRoom = ({ route }) => {
                                         >
                                             <TouchableOpacity
                                                 onPress={() => {
-                                                    totalNight > 1 ? setTotalNight(totalNight - 1) : '';
+                                                    totalNight > 1 ? setTotalNight(parseInt(totalNight) - 1) : '';
                                                 }}
                                             >
                                                 <Icon name="arrow-down" size={36}></Icon>
@@ -784,7 +794,7 @@ const ViewStatusRoom = ({ route }) => {
                                                 defaultValue={`${totalNight}`}
                                                 value={`${totalNight}`}
                                                 onChangeText={(e) => {
-                                                    setTotalNight(e);
+                                                    setTotalNight(parseInt(e));
                                                 }}
                                                 onBlur={() => {
                                                     if (totalNight < 1) {

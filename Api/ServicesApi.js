@@ -1,6 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+const timestamp = new Date().getTime();
+const today = new Date(timestamp + 7 * 3600 * 1000);
 // Get Customer List
 export const getCustomerList = async (hotelId, token) => {
     const res = await axios.get('api/HostManage/Get-All-Inbound-User-Booking-info', {

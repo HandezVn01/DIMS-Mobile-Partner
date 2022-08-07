@@ -1,8 +1,8 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-let today = new Date();
-let date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
+const timestamp = new Date().getTime();
+const today = new Date(timestamp + 7 * 3600 * 1000);
 
 // Get User Used-Menu
 export const getUsedMenu = async (bookingDetailId, token) => {

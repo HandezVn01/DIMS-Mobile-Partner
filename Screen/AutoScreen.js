@@ -7,7 +7,9 @@ import { dispatchFecth, dispatchLogout, dispatchSuccess } from '../redux/actions
 import Customer from '../Components/RoomScreen/Customer';
 import { Audio } from 'expo-av';
 import { ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 export default function AutoScreen() {
+    const navigation = useNavigation();
     const dispatch = useDispatch();
     const hotelId = useSelector((state) => state.auth.hoteiId);
     const token = useSelector((state) => state.auth.token);
@@ -31,9 +33,17 @@ export default function AutoScreen() {
             setHasPermission(status === 'granted');
         })();
     }, []);
+    useEffect(() => {
+        console.log('run');
+        return () => {
+            setHasPermission(false);
+            console.log('auto close');
+        };
+    }, []);
     const [showScanCCCD, setShowScanCCCD] = useState(false);
     const [flag, setFlag] = useState(false);
     const handleBarCodeScanned = ({ type, data }) => {
+        console.log(data);
         if (data !== datatmp) {
             alert(`Bar code with type ${type} and data ${data} has been scanned!`);
             setDataTmp(data);
@@ -49,23 +59,23 @@ export default function AutoScreen() {
                         setShowScanCCCD(true);
                         count = 0;
                     })
-                    .catch((err) => (count = 0))
+                    .catch((err) =>
+                        alert('Mã phòng của bạn không hợp lệ . Có vẻ như bạn đã đi sai ngày hoặc sai khách sạn !'),
+                    )
                     .finally(() => dispatch(dispatchSuccess()));
             } else {
-                if (showScanCCCD) {
-                    const value = data.split('|');
-                    const new_data = {
-                        userName: value[2],
-                        userSex: value[4],
-                        userIdCard: value[0],
-                        userBirthday: value[3],
-                        userAddress: value[5],
-                    };
+                const value = data.split('|');
+                const new_data = {
+                    userName: value[2],
+                    userSex: value[4],
+                    userIdCard: value[0],
+                    userBirthday: value[3],
+                    userAddress: value[5],
+                };
 
-                    setList([...list, new_data]);
-                    setList2([...list2, `${value[5]}|${value[3]}|${value[0]}|${value[2]}|${value[4]}`]);
-                    playSound();
-                }
+                setList([...list, new_data]);
+                setList2([...list2, `${value[5]}|${value[3]}|${value[0]}|${value[2]}|${value[4]}`]);
+                playSound();
             }
         }
     };
@@ -100,16 +110,15 @@ export default function AutoScreen() {
                 Alert.alert(
                     'Bạn đã Check In Thành Công , Mã QR của bạn đã được kích hoạt !\n Hãy di chuyển lên phòng của mình , Chúc quý khách chuyến đi vui vẻ !',
                 );
-                setHasPermission(false);
                 count = 0;
                 setList2([]);
                 setList([]);
                 setShowScanCCCD(false);
+                navigation.goBack();
             })
             .catch((err) => {
                 console.log(err);
-                Alert.alert('Error ! ', 'Token your account is expired! Please Login Again ! ');
-                dispatch(dispatchLogout());
+                Alert.alert('Error ! ', 'Your QR Code is not Correct');
             })
             .finally(() => dispatch(dispatchSuccess()));
     };
@@ -126,7 +135,14 @@ export default function AutoScreen() {
                     <Text onPress={() => setHasPermission(true)}>Open Camera</Text>
                 ) : (
                     <>
-                        <BarCodeScanner onBarCodeScanned={handleBarCodeScanned} style={StyleSheet.absoluteFillObject} />
+                        {hasPermission ? (
+                            <BarCodeScanner
+                                onBarCodeScanned={hasPermission ? handleBarCodeScanned : undefined}
+                                style={StyleSheet.absoluteFillObject}
+                            />
+                        ) : (
+                            <></>
+                        )}
                         {showScanCCCD ? (
                             <View style={{ height: '100%', justifyContent: 'flex-end' }}>
                                 <View style={{ height: '50%', backgroundColor: 'white' }}>

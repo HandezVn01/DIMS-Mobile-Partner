@@ -1,5 +1,6 @@
 import axios from 'axios';
-
+const timestamp = new Date().getTime();
+const today = new Date(timestamp + 7 * 3600 * 1000);
 export const LoginUser = async ({ email, password }) => {
     const res = await axios.post(`api/Auth/login-Host`, { email, password });
     return res.data;

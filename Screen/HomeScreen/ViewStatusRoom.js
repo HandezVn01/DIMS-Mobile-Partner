@@ -89,7 +89,7 @@ const ViewStatusRoom = ({ route }) => {
         if (isApiSubscribed) {
             unsubscribe;
         }
-
+        console.log(datas);
         return () => {
             isApiSubscribed = false;
             console.log('done');

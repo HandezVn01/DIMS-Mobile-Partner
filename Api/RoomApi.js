@@ -185,6 +185,7 @@ export const getRoomInfo = async (roomId, token) => {
     return res.data;
 };
 export const GetAllStatus = async (hotelId, token) => {
+    console.log(today);
     const res = await axios.get('api/HostManage/Host-A-Hotel-All-Room-Status-Today', {
         headers: { Authorization: `Bearer ${token}` },
         params: {
@@ -192,6 +193,7 @@ export const GetAllStatus = async (hotelId, token) => {
             today: today,
         },
     });
+    console.log('getall Status');
     return res.data;
 };
 

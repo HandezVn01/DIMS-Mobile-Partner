@@ -6,11 +6,16 @@ import HomeScreen from '../Screen/HomeScreen';
 import ProfileScreen from '../Screen/ProfileScreen';
 import AutoScreen from '../Screen/AutoScreen';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AutoScreenSayHi from '../Screen/AutoScreenSayHi';
 const Tab = createBottomTabNavigator();
 
 function MyTabs() {
     return (
-        <Tab.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: '#3DC5B5' }}>
+        <Tab.Navigator
+            screenOptions={{ headerShown: false, tabBarActiveTintColor: '#3DC5B5' }}
+            detachInactiveScreens={false}
+            screenListeners={true}
+        >
             <Tab.Screen
                 name="HomeScreen"
                 component={HomeScreen}
@@ -20,7 +25,7 @@ function MyTabs() {
             />
             <Tab.Screen
                 name="Auto"
-                component={AutoScreen}
+                component={AutoScreenSayHi}
                 options={{
                     tabBarIcon: ({ color }) => <Icon name="login" size={24} color={color}></Icon>,
                 }}

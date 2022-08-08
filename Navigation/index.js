@@ -75,6 +75,7 @@ const Navigation = () => {
                 <Stack.Screen name="AutoScreen" component={AutoScreen}></Stack.Screen>
                 <Stack.Screen name="ProfileScreen" component={ProfileScreen}></Stack.Screen>
                 <Stack.Screen name="GroupBookingeScreen" component={GroupBookingScreen}></Stack.Screen>
+                <Stack.Screen name="AutoScreenHello" component={AutoScreen}></Stack.Screen>
             </Stack.Navigator>
         </NavigationContainer>
     );

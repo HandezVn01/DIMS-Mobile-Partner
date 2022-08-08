@@ -8,6 +8,7 @@ import Customer from '../Components/RoomScreen/Customer';
 import { Audio } from 'expo-av';
 import { ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 export default function AutoScreen() {
     const navigation = useNavigation();
     const dispatch = useDispatch();
@@ -125,8 +126,15 @@ export default function AutoScreen() {
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end' }}>
-                <Text>Check In Auto</Text>
+            <View style={{ flex: 2 }}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <View style={styles.back}>
+                            <Icon name="chevron-left" size={30} color="#3DC5B5"></Icon>
+                        </View>
+                    </TouchableOpacity>
+                    <Text style={styles.header_title}>Check In Auto</Text>
+                </View>
             </View>
             <View style={{ flex: 9 }}>
                 {hasPermission === null ? (
@@ -208,3 +216,22 @@ export default function AutoScreen() {
         </SafeAreaView>
     );
 }
+const styles = StyleSheet.create({
+    back: {
+        height: 42,
+        width: 42,
+        borderColor: '#B2B2B2',
+        borderWidth: 1,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    header: { flex: 3, flexDirection: 'row', alignItems: 'center', marginLeft: 20 },
+    header_title: {
+        fontWeight: '600',
+        fontSize: 16,
+        lineHeight: 28,
+        letterSpacing: 0.5,
+        marginLeft: 15,
+    },
+});

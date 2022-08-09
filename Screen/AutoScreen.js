@@ -109,6 +109,7 @@ export default function AutoScreen() {
         await RoomApi.updateCustomerInBooking(hotelId, bookingId, list2, token)
             .then((result) => {
                 Alert.alert(
+                    'Success !',
                     'Bạn đã Check In Thành Công , Mã QR của bạn đã được kích hoạt !\n Hãy di chuyển lên phòng của mình , Chúc quý khách chuyến đi vui vẻ !',
                 );
                 count = 0;

@@ -23,7 +23,7 @@ import { Audio } from 'expo-av';
 import Itemlist from '../../Components/RoomScreen/CheckOut/Itemlist';
 import Footer from '../../Components/RoomScreen/Footer';
 import InputCompunent from '../../Components/RoomScreen/CheckInNav/InputCompunent';
-import { Checkbox } from 'react-native-paper';
+import { Checkbox, Modal, Portal, Provider } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import moment from 'moment';
@@ -401,543 +401,618 @@ const RoomDetailScreen = ({ route }) => {
             },
         ]);
     };
+    const handleGetQRCode = (bookingDetailId) => {
+        Alert.alert(`Get QR Code of Room ${roomName}`, 'Hãy chắc chắn rằng bạn đã được sự cho phép của khách hàng !', [
+            {
+                text: 'Hủy',
+                style: 'cancel',
+            },
+            {
+                text: 'Xác Nhận',
+                onPress: () => {
+                    dispatch(dispatchFecth());
+                    RoomApi.getRoomQR(bookingDetailId, token)
+                        .then((result) => setQRcode(result.qrUrl))
+                        .catch(() => {
+                            Alert.alert('Sorry!', 'Server is Error !');
+                        })
+                        .finally(() => dispatch(dispatchSuccess()));
+                    showModal();
+                },
+            },
+        ]);
+    };
+    const [visible, setVisible] = useState(false);
+    const showModal = () => setVisible(true);
+    const hideModal = () => setVisible(false);
+    const [qrCode, setQRcode] = useState('');
     return (
-        <SafeAreaView style={{ flex: 1, marginTop: 20, overflow: 'hidden' }}>
-            {/* Show Add Item Popup */}
-            {showAddItem ? (
-                <View style={styles.showPopup}>
-                    <View style={styles.PopupContainer}>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                padding: 20,
-                                paddingTop: 5,
-                                paddingBottom: 5,
-                                borderBottomWidth: 1,
-                                alignItems: 'center',
-                                flex: 1,
+        <Provider>
+            <SafeAreaView style={{ flex: 1, marginTop: 20, overflow: 'hidden' }}>
+                <Portal>
+                    <Modal
+                        visible={visible}
+                        onDismiss={hideModal}
+                        contentContainerStyle={{
+                            backgroundColor: 'white',
+                            padding: 20,
+                            height: '50%',
+                            width: width - 40,
+                            marginLeft: 20,
+                            marginRight: 20,
+                        }}
+                    >
+                        <Image
+                            source={{
+                                uri: qrCode,
                             }}
-                        >
-                            <Text style={{ fontSize: 16, fontWeight: '600', color: '#3DC5B5' }}>Used Item </Text>
-                            <TouchableOpacity onPress={() => setShowAddItem(!showAddItem)}>
-                                <Icon name="close" size={30}></Icon>
-                            </TouchableOpacity>
-                        </View>
-                        <View
-                            style={{
-                                flex: 9,
-                                paddingLeft: 20,
-                                paddingRight: 20,
-                                paddingTop: 10,
-                                paddingBottom: 20,
-                            }}
-                        >
-                            <ScrollView>
-                                {itemListUse.map((item, index) => {
-                                    if (item.itemStatus) {
-                                        return (
-                                            <Itemlist
-                                                itemName={item.itemName}
-                                                itemPrice={item.itemPrice}
-                                                itemType={item.itemType}
-                                                itemUse={item.quantity}
-                                                key={`a${index}`}
-                                                handleSum={(e) =>
-                                                    handleSumTotal({
-                                                        quantity: e,
-                                                        price: item.itemPrice,
-                                                        itemName: item.itemName,
-                                                    })
-                                                }
-                                            ></Itemlist>
-                                        );
-                                    }
-                                    return <></>;
-                                })}
-                            </ScrollView>
-                        </View>
-                        <View
-                            style={{
-                                flex: 2.5,
-                                paddingLeft: 20,
-                                paddingRight: 20,
-                            }}
-                        >
-                            {/* Extra Fee */}
+                            borderRadius={24}
+                            style={{ width: '100%', height: '100%' }}
+                        />
+                    </Modal>
+                </Portal>
+
+                {/* Show Add Item Popup */}
+                {showAddItem ? (
+                    <View style={styles.showPopup}>
+                        <View style={styles.PopupContainer}>
                             <View
                                 style={{
                                     flexDirection: 'row',
                                     justifyContent: 'space-between',
+                                    padding: 20,
+                                    paddingTop: 5,
+                                    paddingBottom: 5,
+                                    borderBottomWidth: 1,
                                     alignItems: 'center',
+                                    flex: 1,
                                 }}
                             >
-                                <Text>Extra Fee :</Text>
-                                <TextInput
-                                    style={{
-                                        height: 36,
-                                        width: 120,
-                                        borderColor: '#000',
-                                        borderWidth: 1,
-                                        borderRadius: 24,
-                                        paddingLeft: 15,
-                                    }}
-                                    value={extraFee}
-                                    placeholder={'Extra Fee'}
-                                    keyboardType={'numeric'}
-                                    onChangeText={(e) => setExtraFee(e)}
-                                ></TextInput>
-                                <Text>VNĐ</Text>
+                                <Text style={{ fontSize: 16, fontWeight: '600', color: '#3DC5B5' }}>Used Item </Text>
+                                <TouchableOpacity onPress={() => setShowAddItem(!showAddItem)}>
+                                    <Icon name="close" size={30}></Icon>
+                                </TouchableOpacity>
                             </View>
                             <View
                                 style={{
-                                    flexDirection: 'row',
-                                    marginTop: 10,
-                                    alignItems: 'center',
+                                    flex: 9,
+                                    paddingLeft: 20,
+                                    paddingRight: 20,
+                                    paddingTop: 10,
+                                    paddingBottom: 20,
                                 }}
                             >
-                                <Text>Reason :</Text>
-                                <TextInput
-                                    style={{
-                                        height: 36,
-                                        width: 250,
-                                        borderColor: '#000',
-                                        borderWidth: 1,
-                                        borderRadius: 24,
-                                        paddingLeft: 15,
-                                    }}
-                                    value={reasonExtra}
-                                    placeholder={'Reason of Extra Fee '}
-                                    onChangeText={(e) => setReasonExtra(e)}
-                                ></TextInput>
+                                <ScrollView>
+                                    {itemListUse.map((item, index) => {
+                                        if (item.itemStatus) {
+                                            return (
+                                                <Itemlist
+                                                    itemName={item.itemName}
+                                                    itemPrice={item.itemPrice}
+                                                    itemType={item.itemType}
+                                                    itemUse={item.quantity}
+                                                    key={`a${index}`}
+                                                    handleSum={(e) =>
+                                                        handleSumTotal({
+                                                            quantity: e,
+                                                            price: item.itemPrice,
+                                                            itemName: item.itemName,
+                                                        })
+                                                    }
+                                                ></Itemlist>
+                                            );
+                                        }
+                                        return <></>;
+                                    })}
+                                </ScrollView>
                             </View>
-                        </View>
-                        <View
-                            style={{
-                                flex: 1.5,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderTopColor: '#3DC5B5',
-                                borderTopWidth: 1,
-                            }}
-                        >
-                            <TouchableOpacity onPress={handleSubmitUsedItem}>
+                            <View
+                                style={{
+                                    flex: 2.5,
+                                    paddingLeft: 20,
+                                    paddingRight: 20,
+                                }}
+                            >
+                                {/* Extra Fee */}
                                 <View
                                     style={{
-                                        height: 36,
-                                        width: 120,
-                                        backgroundColor: '#3DC5B5',
-                                        borderRadius: 24,
-                                        justifyContent: 'center',
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <Text>Submit</Text>
+                                    <Text>Extra Fee :</Text>
+                                    <TextInput
+                                        style={{
+                                            height: 36,
+                                            width: 120,
+                                            borderColor: '#000',
+                                            borderWidth: 1,
+                                            borderRadius: 24,
+                                            paddingLeft: 15,
+                                        }}
+                                        value={extraFee}
+                                        placeholder={'Extra Fee'}
+                                        keyboardType={'numeric'}
+                                        onChangeText={(e) => setExtraFee(e)}
+                                    ></TextInput>
+                                    <Text>VNĐ</Text>
                                 </View>
-                            </TouchableOpacity>
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        marginTop: 10,
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Text>Reason :</Text>
+                                    <TextInput
+                                        style={{
+                                            height: 36,
+                                            width: 250,
+                                            borderColor: '#000',
+                                            borderWidth: 1,
+                                            borderRadius: 24,
+                                            paddingLeft: 15,
+                                        }}
+                                        value={reasonExtra}
+                                        placeholder={'Reason of Extra Fee '}
+                                        onChangeText={(e) => setReasonExtra(e)}
+                                    ></TextInput>
+                                </View>
+                            </View>
+                            <View
+                                style={{
+                                    flex: 1.5,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderTopColor: '#3DC5B5',
+                                    borderTopWidth: 1,
+                                }}
+                            >
+                                <TouchableOpacity onPress={handleSubmitUsedItem}>
+                                    <View
+                                        style={{
+                                            height: 36,
+                                            width: 120,
+                                            backgroundColor: '#3DC5B5',
+                                            borderRadius: 24,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Text>Submit</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
-                </View>
-            ) : (
-                <></>
-            )}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <View style={styles.back}>
-                        <Icon name="chevron-left" size={30} color="#3DC5B5"></Icon>
+                ) : (
+                    <></>
+                )}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <View style={styles.back}>
+                            <Icon name="chevron-left" size={30} color="#3DC5B5"></Icon>
+                        </View>
+                    </TouchableOpacity>
+                    <View style={styles.header_content}>
+                        <Icon name="home" size={24} color={status == 2 ? '#3DC5B5' : '#000'}></Icon>
+                        <Text style={styles.header_title}>Room {roomName}</Text>
                     </View>
-                </TouchableOpacity>
-                <View style={styles.header_content}>
-                    <Icon name="home" size={24} color={status == 2 ? '#3DC5B5' : '#000'}></Icon>
-                    <Text style={styles.header_title}>Room {roomName}</Text>
                 </View>
-            </View>
 
-            <View style={[styles.container]}>
-                <KeyboardAwareScrollView contentInsetAdjustmentBehavior="automatic">
-                    <View style={{ alignItems: 'center' }}>
-                        <View style={styles.card}>
-                            <View style={{ zIndex: 1 }}>
-                                {hasPermission === true ? (
-                                    Platform.OS === 'ios' ? (
-                                        <Camera
-                                            style={styles.camera}
-                                            type="back"
-                                            onBarCodeScanned={handleBarCodeScanned}
-                                            focusDepth={1}
-                                        ></Camera>
-                                    ) : (
-                                        <View
-                                            style={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                height: 500,
-                                                width: '100%',
-                                            }}
-                                        >
-                                            <BarCodeScanner
+                <View style={[styles.container]}>
+                    <KeyboardAwareScrollView contentInsetAdjustmentBehavior="automatic">
+                        <View style={{ alignItems: 'center' }}>
+                            <View style={styles.card}>
+                                <View style={{ zIndex: 1 }}>
+                                    {hasPermission === true ? (
+                                        Platform.OS === 'ios' ? (
+                                            <Camera
+                                                style={styles.camera}
+                                                type="back"
                                                 onBarCodeScanned={handleBarCodeScanned}
-                                                style={StyleSheet.absoluteFillObject}
-                                            />
-                                        </View>
-                                    )
-                                ) : (
-                                    <View />
-                                )}
-                            </View>
-                            <Image
-                                source={require('../../assets/Card.png')}
-                                borderRadius={24}
-                                style={{ height: '100%', width: '100%' }}
-                            />
-                            <View style={styles.card_content}>
-                                <Text style={styles.card_content_text}>
-                                    CheckIn Date:{' '}
-                                    <Text style={styles.card_data}>{moment(data.createDate).format('YYYY-MM-DD')}</Text>
-                                </Text>
-                                <Text style={styles.card_content_text}>
-                                    CheckOut Date:{' '}
-                                    <Text style={styles.card_data}>{moment(data.endDate).format('YYYY-MM-DD')}</Text>
-                                </Text>
-                                <Text style={styles.card_content_text}>
-                                    Type: <Text style={styles.card_data}>{data.paymentMethod}</Text>
-                                </Text>
-                                <Text style={styles.card_content_text}>
-                                    Created by: <Text style={styles.card_data}>{data.userFullName}</Text>
-                                </Text>
-
-                                <View style={{ overflow: 'scroll', flexWrap: 'wrap' }}>
-                                    <Text style={styles.card_content_text}>
-                                        Status:{' '}
-                                        {data.paymentCondition !== undefined ? (
-                                            <Text
-                                                style={[
-                                                    styles.card_data,
-                                                    {
-                                                        color:
-                                                            data.paymentCondition === 'True'
-                                                                ? '#53A1FD'
-                                                                : data.deposit > 0
-                                                                ? '#F9A000'
-                                                                : '#D72C36',
-                                                    },
-                                                ]}
+                                                focusDepth={1}
+                                            ></Camera>
+                                        ) : (
+                                            <View
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    height: 500,
+                                                    width: '100%',
+                                                }}
                                             >
-                                                {data.paymentCondition === 'True' ? (
-                                                    <Text>Đã Thanh Toán</Text>
-                                                ) : data.deposit < 1 ? (
-                                                    <Text>Chưa Thanh Toán</Text>
-                                                ) : (
-                                                    <Text>
-                                                        Đã Thanh Toán{' '}
-                                                        <Text style={{ color: '#53A1FD' }}>
-                                                            <NumberFormat
-                                                                value={data.deposit * 1000}
-                                                                thousandSeparator={true}
-                                                                displayType={'text'}
-                                                                renderText={(value) => <Text>{value}</Text>}
-                                                            ></NumberFormat>
+                                                <BarCodeScanner
+                                                    onBarCodeScanned={handleBarCodeScanned}
+                                                    style={StyleSheet.absoluteFillObject}
+                                                />
+                                            </View>
+                                        )
+                                    ) : (
+                                        <View />
+                                    )}
+                                </View>
+                                <Image
+                                    source={require('../../assets/Card.png')}
+                                    borderRadius={24}
+                                    style={{ height: '100%', width: '100%' }}
+                                />
+                                <View
+                                    style={{
+                                        position: 'absolute',
+                                        height: '100%',
+                                        right: 30,
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Icon
+                                        name="qrcode-scan"
+                                        size={30}
+                                        color={'#000'}
+                                        onPress={() => handleGetQRCode(data.bookingDetailId)}
+                                    ></Icon>
+                                </View>
+                                <View style={styles.card_content}>
+                                    <Text style={styles.card_content_text}>
+                                        CheckIn Date:{' '}
+                                        <Text style={styles.card_data}>
+                                            {moment(data.createDate).format('YYYY-MM-DD')}
+                                        </Text>
+                                    </Text>
+                                    <Text style={styles.card_content_text}>
+                                        CheckOut Date:{' '}
+                                        <Text style={styles.card_data}>
+                                            {moment(data.endDate).format('YYYY-MM-DD')}
+                                        </Text>
+                                    </Text>
+                                    <Text style={styles.card_content_text}>
+                                        Type: <Text style={styles.card_data}>{data.paymentMethod}</Text>
+                                    </Text>
+                                    <Text style={styles.card_content_text}>
+                                        Created by: <Text style={styles.card_data}>{data.userFullName}</Text>
+                                    </Text>
+
+                                    <View style={{ overflow: 'scroll', flexWrap: 'wrap' }}>
+                                        <Text style={styles.card_content_text}>
+                                            Status:{' '}
+                                            {data.paymentCondition !== undefined ? (
+                                                <Text
+                                                    style={[
+                                                        styles.card_data,
+                                                        {
+                                                            color:
+                                                                data.paymentCondition === 'True'
+                                                                    ? '#53A1FD'
+                                                                    : data.deposit > 0
+                                                                    ? '#F9A000'
+                                                                    : '#D72C36',
+                                                        },
+                                                    ]}
+                                                >
+                                                    {data.paymentCondition === 'True' ? (
+                                                        <Text>Đã Thanh Toán</Text>
+                                                    ) : data.deposit < 1 ? (
+                                                        <Text>Chưa Thanh Toán</Text>
+                                                    ) : (
+                                                        <Text>
+                                                            Đã Thanh Toán{' '}
+                                                            <Text style={{ color: '#53A1FD' }}>
+                                                                <NumberFormat
+                                                                    value={data.deposit * 1000}
+                                                                    thousandSeparator={true}
+                                                                    displayType={'text'}
+                                                                    renderText={(value) => <Text>{value}</Text>}
+                                                                ></NumberFormat>
+                                                            </Text>
+                                                            VNĐ
                                                         </Text>
-                                                        VNĐ
+                                                    )}
+                                                </Text>
+                                            ) : (
+                                                <View></View>
+                                            )}
+                                        </Text>
+                                    </View>
+                                    <Text style={styles.card_content_text}>
+                                        RoomPrice:
+                                        <Text style={styles.price_number}>
+                                            <NumberFormat
+                                                value={(data.totalPrice - usedItem.extraFee || data.totalPrice) * 1000}
+                                                thousandSeparator={true}
+                                                displayType={'text'}
+                                                renderText={(value) => (
+                                                    <Text>
+                                                        {' '}
+                                                        {value}{' '}
+                                                        <Text style={[styles.price_currency, { color: 'orange' }]}>
+                                                            {' '}
+                                                            VNĐ
+                                                        </Text>
                                                     </Text>
                                                 )}
-                                            </Text>
-                                        ) : (
-                                            <View></View>
-                                        )}
+                                            ></NumberFormat>
+                                        </Text>
                                     </Text>
                                 </View>
-                                <Text style={styles.card_content_text}>
-                                    RoomPrice:
-                                    <Text style={styles.price_number}>
-                                        <NumberFormat
-                                            value={(data.totalPrice - usedItem.extraFee || data.totalPrice) * 1000}
-                                            thousandSeparator={true}
-                                            displayType={'text'}
-                                            renderText={(value) => (
-                                                <Text>
-                                                    {' '}
-                                                    {value}{' '}
-                                                    <Text style={[styles.price_currency, { color: 'orange' }]}>
-                                                        {' '}
-                                                        VNĐ
-                                                    </Text>
-                                                </Text>
-                                            )}
-                                        ></NumberFormat>
-                                    </Text>
-                                </Text>
-                            </View>
 
-                            {/* <View style={styles.card_content_price}>
+                                {/* <View style={styles.card_content_price}>
                                 {data.totalPrice !== undefined ? (
                                     
                                 ) : (
                                     <View></View>
                                 )}
                             </View> */}
+                            </View>
                         </View>
-                    </View>
-                    <View
-                        style={{
-                            position: 'relative',
-                            height: height - ((height * 5) / 20 + (Platform.OS === 'android' ? 210 : 270)),
-                            width: width,
-                        }}
-                    >
-                        {checkOutShow ? (
-                            <Animated.View
-                                style={[
-                                    {
-                                        height: '100%',
-                                        width: '100%',
-                                        position: 'absolute',
-                                        backgroundColor: '#fff',
-                                        zIndex: checkoutShowRef,
-                                        borderColor: '#3DC5B5',
-                                        borderWidth: 2,
-                                        borderTopRightRadius: 15,
-                                        borderTopLeftRadius: 15,
-                                        borderBottomWidth: 0,
-                                        flex: 1,
-                                    },
-                                    { opacity: checkoutShowRef },
-                                ]}
-                            >
-                                {status == 1 || status == 4 ? (
-                                    <View style={{ height: '100%', width: '100%' }}>
-                                        <View
-                                            style={{
-                                                padding: 10,
-                                                paddingRight: 20,
-                                                paddingLeft: 20,
-                                                borderBottomColor: '#D5F3F0',
-                                                borderBottomWidth: 1,
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                flex: 1,
-                                            }}
-                                        >
-                                            <Text
+                        <View
+                            style={{
+                                position: 'relative',
+                                height: height - ((height * 5) / 20 + (Platform.OS === 'android' ? 210 : 270)),
+                                width: width,
+                            }}
+                        >
+                            {checkOutShow ? (
+                                <Animated.View
+                                    style={[
+                                        {
+                                            height: '100%',
+                                            width: '100%',
+                                            position: 'absolute',
+                                            backgroundColor: '#fff',
+                                            zIndex: checkoutShowRef,
+                                            borderColor: '#3DC5B5',
+                                            borderWidth: 2,
+                                            borderTopRightRadius: 15,
+                                            borderTopLeftRadius: 15,
+                                            borderBottomWidth: 0,
+                                            flex: 1,
+                                        },
+                                        { opacity: checkoutShowRef },
+                                    ]}
+                                >
+                                    {status == 1 || status == 4 ? (
+                                        <View style={{ height: '100%', width: '100%' }}>
+                                            <View
                                                 style={{
-                                                    fontSize: 18,
-                                                    fontWeight: '600',
-                                                }}
-                                            >
-                                                Room {roomName} : Check In
-                                            </Text>
-                                            <Text>
-                                                <TouchableOpacity onPress={handleShowUp}>
-                                                    <Icon name="close-outline" size={24}></Icon>
-                                                </TouchableOpacity>
-                                            </Text>
-                                        </View>
-                                        <View style={{ flex: 9 }}>
-                                            <ScrollView
-                                                style={{
-                                                    height: '100%',
-                                                    width: '100%',
-                                                    paddingTop: 5,
-                                                    paddingLeft: 15,
+                                                    padding: 10,
                                                     paddingRight: 20,
+                                                    paddingLeft: 20,
+                                                    borderBottomColor: '#D5F3F0',
+                                                    borderBottomWidth: 1,
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    flex: 1,
                                                 }}
                                             >
-                                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                    <Text style={styles.fontText}>Total Night:</Text>
+                                                <Text
+                                                    style={{
+                                                        fontSize: 18,
+                                                        fontWeight: '600',
+                                                    }}
+                                                >
+                                                    Room {roomName} : Check In
+                                                </Text>
+                                                <Text>
+                                                    <TouchableOpacity onPress={handleShowUp}>
+                                                        <Icon name="close-outline" size={24}></Icon>
+                                                    </TouchableOpacity>
+                                                </Text>
+                                            </View>
+                                            <View style={{ flex: 9 }}>
+                                                <ScrollView
+                                                    style={{
+                                                        height: '100%',
+                                                        width: '100%',
+                                                        paddingTop: 5,
+                                                        paddingLeft: 15,
+                                                        paddingRight: 20,
+                                                    }}
+                                                >
+                                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                        <Text style={styles.fontText}>Total Night:</Text>
+                                                        <View
+                                                            style={{
+                                                                flexDirection: 'row',
+                                                                alignItems: 'center',
+                                                                marginLeft: 30,
+                                                            }}
+                                                        >
+                                                            <TouchableOpacity
+                                                                onPress={() => {
+                                                                    totalNight > 1 ? setTotalNight(totalNight - 1) : '';
+                                                                }}
+                                                            >
+                                                                <Icon name="arrow-down" size={36}></Icon>
+                                                            </TouchableOpacity>
+                                                            <TextInput
+                                                                style={{
+                                                                    height: 40,
+                                                                    width: 60,
+                                                                    borderRadius: 20,
+                                                                    borderColor: '#000',
+                                                                    borderWidth: 1,
+                                                                    textAlign: 'center',
+                                                                }}
+                                                                keyboardType="numeric"
+                                                                defaultValue={`${totalNight}`}
+                                                                value={`${totalNight}`}
+                                                                onChangeText={(e) => {
+                                                                    setTotalNight(parseInt(e));
+                                                                }}
+                                                                onBlur={() => {
+                                                                    if (totalNight < 1) {
+                                                                        setTotalNight(1);
+                                                                    }
+                                                                }}
+                                                            ></TextInput>
+                                                            <TouchableOpacity
+                                                                onPress={() => {
+                                                                    setTotalNight(totalNight + 1);
+                                                                }}
+                                                            >
+                                                                <Icon name="arrow-up" size={36}></Icon>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    </View>
+                                                    <InputCompunent
+                                                        title={'Tổng Tiền Phòng'}
+                                                        placeholder={'Example : 200'}
+                                                        sub={'VNĐ'}
+                                                        keyboardType="numeric"
+                                                        setInput={setTotalPrice}
+                                                    ></InputCompunent>
+                                                    <InputCompunent
+                                                        title={'Email:'}
+                                                        placeholder={'Email of customer'}
+                                                        sub={''}
+                                                        setInput={setUserEmail}
+                                                    ></InputCompunent>
                                                     <View
                                                         style={{
                                                             flexDirection: 'row',
                                                             alignItems: 'center',
-                                                            marginLeft: 30,
+                                                            justifyContent: 'center',
                                                         }}
                                                     >
-                                                        <TouchableOpacity
-                                                            onPress={() => {
-                                                                totalNight > 1 ? setTotalNight(totalNight - 1) : '';
-                                                            }}
-                                                        >
-                                                            <Icon name="arrow-down" size={36}></Icon>
-                                                        </TouchableOpacity>
+                                                        <Checkbox
+                                                            status={isPayment ? 'checked' : 'unchecked'}
+                                                            onPress={() => setisPayment(!isPayment)}
+                                                        ></Checkbox>
+                                                        <Text style={styles.fontText}>Đã Thanh Toán</Text>
+                                                    </View>
+                                                    <InputCompunent
+                                                        title={'Đã Nhận'}
+                                                        placeholder={'Số Tiền Đã Nhận'}
+                                                        sub={'VNĐ'}
+                                                        setInput={setDeposit}
+                                                        keyboardType={'numeric'}
+                                                    ></InputCompunent>
+                                                </ScrollView>
+                                            </View>
+                                        </View>
+                                    ) : (
+                                        <View style={{ height: '100%', width: '100%' }}>
+                                            <View
+                                                style={{
+                                                    paddingRight: 20,
+                                                    paddingLeft: 20,
+                                                    borderBottomColor: '#D5F3F0',
+                                                    borderBottomWidth: 1,
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    flex: 1,
+                                                }}
+                                            >
+                                                <View style={{ flex: 3 }}>
+                                                    <Text style={{ fontSize: 16, fontWeight: '500', color: '#3DC5B5' }}>
+                                                        Check Out{' '}
+                                                    </Text>
+                                                </View>
+                                                <View style={{ flex: 6 }}>
+                                                    <Text>
+                                                        Total:
+                                                        <NumberFormat
+                                                            value={total * 1000}
+                                                            thousandSeparator={true}
+                                                            displayType={'text'}
+                                                            renderText={(value) => <Text>{value}</Text>}
+                                                        ></NumberFormat>{' '}
+                                                        VNĐ
+                                                    </Text>
+                                                </View>
+                                                <View
+                                                    style={{
+                                                        flex: 1,
+                                                        flexDirection: 'row',
+                                                        justifyContent: 'flex-end',
+                                                    }}
+                                                >
+                                                    <TouchableOpacity onPress={handleShowUp}>
+                                                        <Icon name="close-outline" size={24}></Icon>
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
+                                            <View style={{ flex: 9 }}>
+                                                <ScrollView style={{ paddingLeft: 20, paddingRight: 20 }}>
+                                                    <View
+                                                        style={{
+                                                            flexDirection: 'row',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            marginTop: 10,
+                                                        }}
+                                                    >
+                                                        <Text>Extra Fee:</Text>
                                                         <TextInput
+                                                            placeholder="Example: 200"
                                                             style={{
-                                                                height: 40,
-                                                                width: 60,
-                                                                borderRadius: 20,
                                                                 borderColor: '#000',
                                                                 borderWidth: 1,
-                                                                textAlign: 'center',
+                                                                height: 30,
+                                                                width: 160,
+                                                                borderRadius: 20,
+                                                                paddingLeft: 15,
                                                             }}
+                                                            value={extraFee}
                                                             keyboardType="numeric"
-                                                            defaultValue={`${totalNight}`}
-                                                            value={`${totalNight}`}
-                                                            onChangeText={(e) => {
-                                                                setTotalNight(parseInt(e));
-                                                            }}
-                                                            onBlur={() => {
-                                                                if (totalNight < 1) {
-                                                                    setTotalNight(1);
-                                                                }
-                                                            }}
+                                                            onChangeText={(e) => setExtraFee(e)}
                                                         ></TextInput>
-                                                        <TouchableOpacity
-                                                            onPress={() => {
-                                                                setTotalNight(totalNight + 1);
-                                                            }}
-                                                        >
-                                                            <Icon name="arrow-up" size={36}></Icon>
-                                                        </TouchableOpacity>
+                                                        <Text>VNĐ</Text>
                                                     </View>
-                                                </View>
-                                                <InputCompunent
-                                                    title={'Tổng Tiền Phòng'}
-                                                    placeholder={'Example : 200'}
-                                                    sub={'VNĐ'}
-                                                    keyboardType="numeric"
-                                                    setInput={setTotalPrice}
-                                                ></InputCompunent>
-                                                <InputCompunent
-                                                    title={'Email:'}
-                                                    placeholder={'Email of customer'}
-                                                    sub={''}
-                                                    setInput={setUserEmail}
-                                                ></InputCompunent>
-                                                <View
-                                                    style={{
-                                                        flexDirection: 'row',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                    }}
-                                                >
-                                                    <Checkbox
-                                                        status={isPayment ? 'checked' : 'unchecked'}
-                                                        onPress={() => setisPayment(!isPayment)}
-                                                    ></Checkbox>
-                                                    <Text style={styles.fontText}>Đã Thanh Toán</Text>
-                                                </View>
-                                                <InputCompunent
-                                                    title={'Đã Nhận'}
-                                                    placeholder={'Số Tiền Đã Nhận'}
-                                                    sub={'VNĐ'}
-                                                    setInput={setDeposit}
-                                                    keyboardType={'numeric'}
-                                                ></InputCompunent>
-                                            </ScrollView>
-                                        </View>
-                                    </View>
-                                ) : (
-                                    <View style={{ height: '100%', width: '100%' }}>
-                                        <View
-                                            style={{
-                                                paddingRight: 20,
-                                                paddingLeft: 20,
-                                                borderBottomColor: '#D5F3F0',
-                                                borderBottomWidth: 1,
-                                                flexDirection: 'row',
-                                                alignItems: 'center',
-                                                flex: 1,
-                                            }}
-                                        >
-                                            <View style={{ flex: 3 }}>
-                                                <Text style={{ fontSize: 16, fontWeight: '500', color: '#3DC5B5' }}>
-                                                    Check Out{' '}
-                                                </Text>
-                                            </View>
-                                            <View style={{ flex: 6 }}>
-                                                <Text>
-                                                    Total:
-                                                    <NumberFormat
-                                                        value={total * 1000}
-                                                        thousandSeparator={true}
-                                                        displayType={'text'}
-                                                        renderText={(value) => <Text>{value}</Text>}
-                                                    ></NumberFormat>{' '}
-                                                    VNĐ
-                                                </Text>
-                                            </View>
-                                            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
-                                                <TouchableOpacity onPress={handleShowUp}>
-                                                    <Icon name="close-outline" size={24}></Icon>
-                                                </TouchableOpacity>
-                                            </View>
-                                        </View>
-                                        <View style={{ flex: 9 }}>
-                                            <ScrollView style={{ paddingLeft: 20, paddingRight: 20 }}>
-                                                <View
-                                                    style={{
-                                                        flexDirection: 'row',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'space-between',
-                                                        marginTop: 10,
-                                                    }}
-                                                >
-                                                    <Text>Extra Fee:</Text>
-                                                    <TextInput
-                                                        placeholder="Example: 200"
+                                                    <View
                                                         style={{
-                                                            borderColor: '#000',
-                                                            borderWidth: 1,
-                                                            height: 30,
-                                                            width: 160,
-                                                            borderRadius: 20,
-                                                            paddingLeft: 15,
+                                                            flexDirection: 'row',
+                                                            marginTop: 10,
+                                                            alignItems: 'center',
                                                         }}
-                                                        value={extraFee}
-                                                        keyboardType="numeric"
-                                                        onChangeText={(e) => setExtraFee(e)}
-                                                    ></TextInput>
-                                                    <Text>VNĐ</Text>
-                                                </View>
-                                                <View
-                                                    style={{
-                                                        flexDirection: 'row',
-                                                        marginTop: 10,
-                                                        alignItems: 'center',
-                                                    }}
-                                                >
-                                                    <Text>Reason :</Text>
-                                                    <TextInput
-                                                        style={{
-                                                            height: 36,
-                                                            width: 250,
-                                                            borderColor: '#000',
-                                                            borderWidth: 1,
-                                                            borderRadius: 24,
-                                                            paddingLeft: 15,
-                                                        }}
-                                                        value={reasonExtra}
-                                                        placeholder={'Reason of Extra Fee '}
-                                                        onChangeText={(e) => setReasonExtra(e)}
-                                                    ></TextInput>
-                                                </View>
-                                                <View>
-                                                    <Text>Item Fee:</Text>
-                                                </View>
-                                                {itemListUse.map((item, index) => {
-                                                    if (item.itemStatus) {
-                                                        return (
-                                                            <Itemlist
-                                                                itemName={item.itemName}
-                                                                itemPrice={item.itemPrice}
-                                                                itemType={item.itemType}
-                                                                itemUse={item.quantity}
-                                                                key={`${index}+${item.itemid}`}
-                                                                handleSum={(e) =>
-                                                                    handleSumTotal({
-                                                                        quantity: e,
-                                                                        price: item.itemPrice,
-                                                                        itemName: item.itemName,
-                                                                    })
-                                                                }
-                                                            ></Itemlist>
-                                                        );
-                                                    }
-                                                    return <></>;
-                                                })}
-                                            </ScrollView>
-                                        </View>
-                                        {/* <View style={{ flex: 2, alignItems: 'center' }}>
+                                                    >
+                                                        <Text>Reason :</Text>
+                                                        <TextInput
+                                                            style={{
+                                                                height: 36,
+                                                                width: 250,
+                                                                borderColor: '#000',
+                                                                borderWidth: 1,
+                                                                borderRadius: 24,
+                                                                paddingLeft: 15,
+                                                            }}
+                                                            value={reasonExtra}
+                                                            placeholder={'Reason of Extra Fee '}
+                                                            onChangeText={(e) => setReasonExtra(e)}
+                                                        ></TextInput>
+                                                    </View>
+                                                    <View>
+                                                        <Text>Item Fee:</Text>
+                                                    </View>
+                                                    {itemListUse.map((item, index) => {
+                                                        if (item.itemStatus) {
+                                                            return (
+                                                                <Itemlist
+                                                                    itemName={item.itemName}
+                                                                    itemPrice={item.itemPrice}
+                                                                    itemType={item.itemType}
+                                                                    itemUse={item.quantity}
+                                                                    key={`${index}+${item.itemid}`}
+                                                                    handleSum={(e) =>
+                                                                        handleSumTotal({
+                                                                            quantity: e,
+                                                                            price: item.itemPrice,
+                                                                            itemName: item.itemName,
+                                                                        })
+                                                                    }
+                                                                ></Itemlist>
+                                                            );
+                                                        }
+                                                        return <></>;
+                                                    })}
+                                                </ScrollView>
+                                            </View>
+                                            {/* <View style={{ flex: 2, alignItems: 'center' }}>
                                             <TouchableOpacity>
                                                 <View
                                                     style={{
@@ -962,169 +1037,170 @@ const RoomDetailScreen = ({ route }) => {
                                                 </View>
                                             </TouchableOpacity>
                                         </View> */}
-                                    </View>
-                                )}
-                            </Animated.View>
-                        ) : (
-                            <View></View>
-                        )}
-                        <View style={styles.customerlist}>
-                            <ScrollView
-                                style={{
-                                    width: '90%',
-                                    marginTop: 10,
-                                    marginBottom: 5,
-                                }}
-                            >
-                                <View style={styles.customerlistContainer}>
-                                    <View style={styles.customerlist_header}>
-                                        <Text
-                                            style={{
-                                                fontSize: 16,
-                                                fontWeight: '500',
-                                                color: '#3DC5B5',
-                                            }}
-                                        >
-                                            Item Used List
-                                        </Text>
-                                    </View>
-                                    {itemListUse.map((item, index) => {
-                                        if (item.quantity > 0) {
-                                            return (
-                                                <ItemUsed
-                                                    index={index}
-                                                    name={item.itemName}
-                                                    quantity={item.quantity}
-                                                    price={item.itemPrice}
-                                                    key={`${item.itemName} + ${index}`}
-                                                    removeitem={() =>
-                                                        handleRemoveUseItem(index, item.bookingDetailMenuId)
-                                                    }
-                                                ></ItemUsed>
-                                            );
-                                        }
-                                    })}
-                                    <View style={styles.addmorebtn}>
-                                        <TouchableOpacity onPress={() => handleAddUsedItem()}>
-                                            <Text style={{ color: '#2EC4B6' }}>Add Used Item</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                                <View style={styles.customerlistContainer}>
-                                    <View style={styles.customerlist_header}>
-                                        <Text
-                                            style={{
-                                                fontSize: 16,
-                                                fontWeight: '500',
-                                                color: '#3DC5B5',
-                                            }}
-                                        >
-                                            Customer List
-                                        </Text>
-                                    </View>
-                                    {list.map((customer, index) => {
-                                        return (
-                                            <Customer
-                                                index={index + 1}
-                                                name={customer.userName}
-                                                cccd={customer.userIdCard}
-                                                key={index}
-                                                removeitem={() => removeItemHandle({ indexList: index })}
-                                            ></Customer>
-                                        );
-                                    })}
-                                    {hasPermission === false ? (
+                                        </View>
+                                    )}
+                                </Animated.View>
+                            ) : (
+                                <View></View>
+                            )}
+                            <View style={styles.customerlist}>
+                                <ScrollView
+                                    style={{
+                                        width: '90%',
+                                        marginTop: 10,
+                                        marginBottom: 5,
+                                    }}
+                                >
+                                    <View style={styles.customerlistContainer}>
+                                        <View style={styles.customerlist_header}>
+                                            <Text
+                                                style={{
+                                                    fontSize: 16,
+                                                    fontWeight: '500',
+                                                    color: '#3DC5B5',
+                                                }}
+                                            >
+                                                Item Used List
+                                            </Text>
+                                        </View>
+                                        {itemListUse.map((item, index) => {
+                                            if (item.quantity > 0) {
+                                                return (
+                                                    <ItemUsed
+                                                        index={index}
+                                                        name={item.itemName}
+                                                        quantity={item.quantity}
+                                                        price={item.itemPrice}
+                                                        key={`${item.itemName} + ${index}`}
+                                                        removeitem={() =>
+                                                            handleRemoveUseItem(index, item.bookingDetailMenuId)
+                                                        }
+                                                    ></ItemUsed>
+                                                );
+                                            }
+                                        })}
                                         <View style={styles.addmorebtn}>
-                                            <TouchableOpacity onPress={() => handleAddCustomer()}>
-                                                <Text style={{ color: '#2EC4B6' }}>Add More</Text>
+                                            <TouchableOpacity onPress={() => handleAddUsedItem()}>
+                                                <Text style={{ color: '#2EC4B6' }}>Add Used Item</Text>
                                             </TouchableOpacity>
                                         </View>
-                                    ) : (
-                                        <View></View>
-                                    )}
-                                </View>
-                            </ScrollView>
+                                    </View>
+                                    <View style={styles.customerlistContainer}>
+                                        <View style={styles.customerlist_header}>
+                                            <Text
+                                                style={{
+                                                    fontSize: 16,
+                                                    fontWeight: '500',
+                                                    color: '#3DC5B5',
+                                                }}
+                                            >
+                                                Customer List
+                                            </Text>
+                                        </View>
+                                        {list.map((customer, index) => {
+                                            return (
+                                                <Customer
+                                                    index={index + 1}
+                                                    name={customer.userName}
+                                                    cccd={customer.userIdCard}
+                                                    key={index}
+                                                    removeitem={() => removeItemHandle({ indexList: index })}
+                                                ></Customer>
+                                            );
+                                        })}
+                                        {hasPermission === false ? (
+                                            <View style={styles.addmorebtn}>
+                                                <TouchableOpacity onPress={() => handleAddCustomer()}>
+                                                    <Text style={{ color: '#2EC4B6' }}>Add More</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        ) : (
+                                            <View></View>
+                                        )}
+                                    </View>
+                                </ScrollView>
+                            </View>
                         </View>
-                    </View>
-                </KeyboardAwareScrollView>
-            </View>
-            <View style={{ flex: 1.8, flexDirection: 'row', alignItems: 'center' }}>
-                {checkOutShow === true ? (
-                    <View
-                        style={{
-                            height: '100%',
-                            width: '100%',
-                            borderWidth: 2,
-                            borderColor: '#2EC4B6',
-                            backgroundColor: '#FFF',
-                            borderBottomWidth: 0,
-                            borderTopWidth: 0,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <TouchableOpacity
-                            onPress={() => {
-                                status == 1 ? handleCheckIn() : handleCheckOutSubmit();
+                    </KeyboardAwareScrollView>
+                </View>
+                <View style={{ flex: 1.8, flexDirection: 'row', alignItems: 'center' }}>
+                    {checkOutShow === true ? (
+                        <View
+                            style={{
+                                height: '100%',
+                                width: '100%',
+                                borderWidth: 2,
+                                borderColor: '#2EC4B6',
+                                backgroundColor: '#FFF',
+                                borderBottomWidth: 0,
+                                borderTopWidth: 0,
+                                justifyContent: 'center',
+                                alignItems: 'center',
                             }}
                         >
-                            <View
-                                style={{
-                                    width: 160,
-                                    height: 40,
-                                    backgroundColor: '#3DC5B5',
-                                    borderRadius: 20,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
+                            <TouchableOpacity
+                                onPress={() => {
+                                    status == 1 ? handleCheckIn() : handleCheckOutSubmit();
                                 }}
                             >
-                                <Text style={{ fontSize: 20, fontWeight: '600', color: '#fff' }}>{actionName}</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
-                ) : (
-                    <Animated.View style={[styles.footer, { opacity: checkOutShow === false ? 1 : 0 }]}>
-                        {hasPermission ? (
-                            <TouchableOpacity
-                                onPress={() => (status == 2 ? handleModifyAddCustomer() : handleCheckInSubmit())}
-                            >
-                                <View>
-                                    <Text
-                                        style={{
-                                            color: '#2EC4B6',
-                                            fontSize: 18,
-                                            fontWeight: '500',
-                                            letterSpacing: 1,
-                                        }}
-                                    >
-                                        Finish
-                                    </Text>
+                                <View
+                                    style={{
+                                        width: 160,
+                                        height: 40,
+                                        backgroundColor: '#3DC5B5',
+                                        borderRadius: 20,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Text style={{ fontSize: 20, fontWeight: '600', color: '#fff' }}>{actionName}</Text>
                                 </View>
                             </TouchableOpacity>
-                        ) : changeState ? (
-                            <TouchableOpacity onPress={() => handleModifyAddCustomer()}>
-                                <View>
-                                    <Text
-                                        style={{
-                                            color: '#2EC4B6',
-                                            fontSize: 18,
-                                            fontWeight: '500',
-                                            letterSpacing: 1,
-                                        }}
-                                    >
-                                        Save
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-                        ) : (
-                            <TouchableOpacity onPress={handleShowUp}>
-                                <Footer status={status}></Footer>
-                            </TouchableOpacity>
-                        )}
-                    </Animated.View>
-                )}
-            </View>
-        </SafeAreaView>
+                        </View>
+                    ) : (
+                        <Animated.View style={[styles.footer, { opacity: checkOutShow === false ? 1 : 0 }]}>
+                            {hasPermission ? (
+                                <TouchableOpacity
+                                    onPress={() => (status == 2 ? handleModifyAddCustomer() : handleCheckInSubmit())}
+                                >
+                                    <View>
+                                        <Text
+                                            style={{
+                                                color: '#2EC4B6',
+                                                fontSize: 18,
+                                                fontWeight: '500',
+                                                letterSpacing: 1,
+                                            }}
+                                        >
+                                            Finish
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            ) : changeState ? (
+                                <TouchableOpacity onPress={() => handleModifyAddCustomer()}>
+                                    <View>
+                                        <Text
+                                            style={{
+                                                color: '#2EC4B6',
+                                                fontSize: 18,
+                                                fontWeight: '500',
+                                                letterSpacing: 1,
+                                            }}
+                                        >
+                                            Save
+                                        </Text>
+                                    </View>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity onPress={handleShowUp}>
+                                    <Footer status={status}></Footer>
+                                </TouchableOpacity>
+                            )}
+                        </Animated.View>
+                    )}
+                </View>
+            </SafeAreaView>
+        </Provider>
     );
 };
 const styles = StyleSheet.create({

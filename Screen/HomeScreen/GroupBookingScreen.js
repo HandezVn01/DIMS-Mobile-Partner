@@ -1,4 +1,14 @@
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView, ScrollView, TextInput, Alert } from 'react-native';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    SafeAreaView,
+    ScrollView,
+    TextInput,
+    Alert,
+    Image,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
@@ -12,6 +22,9 @@ import { BarCodeScanner } from 'expo-barcode-scanner';
 import { Camera } from 'expo-camera';
 import { Audio } from 'expo-av';
 import Itemlist from '../../Components/RoomScreen/CheckOut/Itemlist';
+import { Modal, Portal, Provider } from 'react-native-paper';
+import { Dimensions } from 'react-native';
+var { width, height } = Dimensions.get('window');
 const GroupBookingScreen = ({ route }) => {
     const navigation = useNavigation();
     const params = route.params;
@@ -270,369 +283,83 @@ const GroupBookingScreen = ({ route }) => {
             },
         ]);
     };
+    const handleGetQRCode = () => {
+        Alert.alert(`Get QR Code `, 'Hãy chắc chắn rằng bạn đã được sự cho phép của khách hàng !', [
+            {
+                text: 'Hủy',
+                style: 'cancel',
+            },
+            {
+                text: 'Xác Nhận',
+                onPress: () => {
+                    // dispatch(dispatchFecth());
+                    // RoomApi.getRoomQR(bookingDetailId, token)
+                    //     .then((result) => setQRcode(result.qrUrl))
+                    //     .catch(() => {
+                    //         Alert.alert('Sorry!', 'Server is Error !');
+                    //     })
+                    //     .finally(() => dispatch(dispatchSuccess()));
+                },
+            },
+        ]);
+        showModal();
+        // console.log('show');
+    };
+    const getRoomQRCode = (bookingDetailId) => {
+        dispatch(dispatchFecth());
+        RoomApi.getRoomQR(bookingDetailId, token)
+            .then((result) => {
+                setQRcode(result.qrUrl), setVisible2(!visible2);
+            })
+            .catch(() => {
+                Alert.alert('Sorry!', 'Server is Error !');
+            })
+            .finally(() => dispatch(dispatchSuccess()));
+    };
+    const [visible, setVisible] = useState(false);
+    const [visible2, setVisible2] = useState(false);
+    const showModal = () => setVisible(true);
+    const hideModal = () => {
+        setVisible(false), setVisible2(false);
+    };
+    const [qrCode, setQRcode] = useState('');
     return (
-        <SafeAreaView style={{ flex: 1, marginTop: 20, overflow: 'hidden' }}>
-            {showAddItem ? (
-                <View style={styles.showPopup}>
-                    <View style={styles.PopupContainer}>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                padding: 20,
-                                paddingTop: 5,
-                                paddingBottom: 5,
-                                borderBottomWidth: 1,
-                                alignItems: 'center',
-                                flex: 1,
-                            }}
-                        >
-                            <Text style={{ fontSize: 16, fontWeight: '600', color: '#3DC5B5' }}>Used Item </Text>
-                            <TouchableOpacity onPress={() => setShowAddItem(!showAddItem)}>
-                                <Icon name="close" size={30}></Icon>
-                            </TouchableOpacity>
-                        </View>
-                        <View
-                            style={{
-                                flex: 9,
-                                paddingLeft: 20,
-                                paddingRight: 20,
-                                paddingTop: 10,
-                                paddingBottom: 20,
-                            }}
-                        >
-                            <ScrollView>
-                                {itemListUse.map((item, index) => {
-                                    if (item.itemStatus) {
-                                        return (
-                                            <Itemlist
-                                                itemName={item.itemName}
-                                                itemPrice={item.itemPrice}
-                                                itemType={item.itemType}
-                                                itemUse={item.quantity}
-                                                key={`a${index}b`}
-                                                handleSum={(e) =>
-                                                    handleSumTotal({
-                                                        quantity: e,
-                                                        price: item.itemPrice,
-                                                        itemName: item.itemName,
-                                                    })
-                                                }
-                                            ></Itemlist>
-                                        );
-                                    }
-                                    return <></>;
-                                })}
-                            </ScrollView>
-                        </View>
-                        <View
-                            style={{
-                                flex: 2.5,
-                                paddingLeft: 20,
-                                paddingRight: 20,
-                            }}
-                        >
-                            {/* Extra Fee */}
-                            <View
-                                style={{
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <Text>Extra Fee :</Text>
-                                <TextInput
-                                    style={{
-                                        height: 36,
-                                        width: 120,
-                                        borderColor: '#000',
-                                        borderWidth: 1,
-                                        borderRadius: 24,
-                                        paddingLeft: 15,
-                                    }}
-                                    value={extraFee}
-                                    placeholder={'Extra Fee'}
-                                    keyboardType={'numeric'}
-                                    onChangeText={(e) => setExtraFee(e)}
-                                ></TextInput>
-                                <Text>VNĐ</Text>
-                            </View>
-                            <View
-                                style={{
-                                    flexDirection: 'row',
-                                    marginTop: 10,
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <Text>Reason :</Text>
-                                <TextInput
-                                    style={{
-                                        height: 36,
-                                        width: 250,
-                                        borderColor: '#000',
-                                        borderWidth: 1,
-                                        borderRadius: 24,
-                                        paddingLeft: 15,
-                                    }}
-                                    value={reasonExtra}
-                                    placeholder={'Reason of Extra Fee '}
-                                    onChangeText={(e) => setReasonExtra(e)}
-                                ></TextInput>
-                            </View>
-                        </View>
-                        <View
-                            style={{
-                                flex: 1.5,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                borderTopColor: '#3DC5B5',
-                                borderTopWidth: 1,
-                            }}
-                        >
-                            <TouchableOpacity onPress={handleSubmitUsedItem}>
-                                <View
-                                    style={{
-                                        height: 36,
-                                        width: 120,
-                                        backgroundColor: '#3DC5B5',
-                                        borderRadius: 24,
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                    }}
-                                >
-                                    <Text>Submit</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            ) : (
-                <></>
-            )}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <View style={styles.back}>
-                        <Icon name="chevron-left" size={30} color="#3DC5B5"></Icon>
-                    </View>
-                </TouchableOpacity>
-                <Text style={styles.header_title}>Booking :{params.bookingId}</Text>
-            </View>
-            <View style={[styles.container]}>
-                <ScrollView style={{ width: '100%' }}>
-                    <View
-                        style={{
-                            paddingLeft: 30,
-                            paddingBottom: 10,
-                            width: '100%',
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#938D8D',
+        <Provider>
+            <SafeAreaView style={{ flex: 1, marginTop: 20, overflow: 'hidden' }}>
+                <Portal>
+                    <Modal
+                        visible={visible}
+                        onDismiss={hideModal}
+                        contentContainerStyle={{
+                            backgroundColor: 'white',
+                            padding: 20,
+                            width: width - 40,
+                            marginLeft: 20,
+                            marginRight: 20,
+                            height: visible2 ? '50%' : 'auto',
                         }}
                     >
-                        <View style={styles.customerlist_header}>
-                            <Text
-                                style={{
-                                    fontSize: 16,
-                                    fontWeight: '500',
-                                    color: '#3DC5B5',
+                        {visible2 ? (
+                            <Image
+                                source={{
+                                    uri: qrCode,
                                 }}
-                            >
-                                List Room
-                            </Text>
-                        </View>
-
-                        {data.bookingDetails ? (
-                            <ScrollView horizontal>
-                                {data.bookingDetails.map((item) => {
-                                    return (
-                                        <View key={item.bookingDetailId}>
-                                            <TouchableOpacity
-                                                style={[
-                                                    {
-                                                        paddingRight: 20,
-                                                        paddingLeft: 20,
-                                                        alignItems: 'center',
-                                                    },
-                                                ]}
-                                            >
-                                                <Icon name="home" size={24} color={'#3DC5B5'}></Icon>
-
-                                                {params.roomId.map((e, index) => {
-                                                    if (e == item.roomId) {
-                                                        return (
-                                                            <Text key={`asdasdasd${index}`}>
-                                                                {' '}
-                                                                {params.roomName[index]}
-                                                            </Text>
-                                                        );
-                                                    }
-                                                })}
-                                            </TouchableOpacity>
-                                        </View>
-                                    );
-                                })}
-                            </ScrollView>
+                                borderRadius={24}
+                                style={{ width: '100%', height: '100%' }}
+                            />
                         ) : (
-                            <></>
-                        )}
-                    </View>
-                    <View style={styles.card_content}>
-                        <Text style={styles.card_content_text}>
-                            CheckIn Date:{' '}
-                            <Text style={styles.card_data}>
-                                {moment(data.qrCheckUp ? data.qrCheckUp.checkIn : undefined).format(
-                                    'HH:MM , DD-MM-YYYY',
-                                )}
-                            </Text>
-                        </Text>
-                        <Text style={styles.card_content_text}>
-                            CheckOut Date:{' '}
-                            <Text style={styles.card_data}>{moment(data.endDate).format('DD-MM-YYYY')}</Text>
-                        </Text>
-                        <Text style={styles.card_content_text}>
-                            Type: <Text style={styles.card_data}>{data.paymentMethod}</Text>
-                        </Text>
-
-                        <View style={{ overflow: 'scroll', flexWrap: 'wrap' }}>
-                            <Text style={styles.card_content_text}>
-                                Status:{' '}
-                                {data.paymentCondition !== undefined ? (
-                                    <Text
-                                        style={[
-                                            styles.card_data,
-                                            {
-                                                color:
-                                                    data.paymentCondition === 'True'
-                                                        ? '#53A1FD'
-                                                        : data.deposit > 0
-                                                        ? '#F9A000'
-                                                        : '#D72C36',
-                                            },
-                                        ]}
-                                    >
-                                        {data.paymentCondition === 'True' ? (
-                                            <Text>Đã Thanh Toán</Text>
-                                        ) : data.deposit < 1 ? (
-                                            <Text>Chưa Thanh Toán</Text>
-                                        ) : (
-                                            <Text>
-                                                Đã Thanh Toán{' '}
-                                                <Text style={{ color: '#53A1FD' }}>
-                                                    <NumberFormat
-                                                        value={data.deposit * 1000}
-                                                        thousandSeparator={true}
-                                                        displayType={'text'}
-                                                        renderText={(value) => <Text>{value}</Text>}
-                                                    ></NumberFormat>
-                                                </Text>
-                                                VNĐ
-                                            </Text>
-                                        )}
-                                    </Text>
-                                ) : (
-                                    <View></View>
-                                )}
-                            </Text>
-                        </View>
-                        <Text style={styles.card_content_text}>
-                            Room Price:
-                            <Text style={styles.price_number}>
-                                <NumberFormat
-                                    value={RoomsPrice * 1000}
-                                    thousandSeparator={true}
-                                    displayType={'text'}
-                                    renderText={(value) => (
-                                        <Text>
-                                            {' '}
-                                            {value}{' '}
-                                            <Text style={[styles.price_currency, { color: '#53A1FD' }]}> VNĐ</Text>
-                                        </Text>
-                                    )}
-                                ></NumberFormat>
-                            </Text>
-                        </Text>
-                        <Text style={styles.card_content_text}>
-                            ExtraFee:
-                            <Text style={styles.price_number}>
-                                <NumberFormat
-                                    value={(data.totalPrice - RoomsPrice) * 1000}
-                                    thousandSeparator={true}
-                                    displayType={'text'}
-                                    renderText={(value) => (
-                                        <Text>
-                                            {' '}
-                                            {value}{' '}
-                                            <Text style={[styles.price_currency, { color: '#53A1FD' }]}> VNĐ</Text>
-                                        </Text>
-                                    )}
-                                ></NumberFormat>
-                            </Text>
-                        </Text>
-                        <Text style={styles.card_content_text}>
-                            Total:
-                            <Text style={styles.price_number}>
-                                <NumberFormat
-                                    value={(data.totalPrice - data.deposit) * 1000}
-                                    thousandSeparator={true}
-                                    displayType={'text'}
-                                    renderText={(value) => (
-                                        <Text>
-                                            {' '}
-                                            {value}{' '}
-                                            <Text style={[styles.price_currency, { color: '#53A1FD' }]}> VNĐ</Text>
-                                        </Text>
-                                    )}
-                                ></NumberFormat>
-                            </Text>
-                        </Text>
-                    </View>
-                    {hasPermission === true ? (
-                        Platform.OS === 'ios' ? (
-                            <Camera
-                                style={{
-                                    height: 300,
-                                    width: '100%',
-                                }}
-                                type="back"
-                                onBarCodeScanned={handleBarCodeScanned}
-                                focusDepth={1}
-                            ></Camera>
-                        ) : (
-                            <View
-                                style={{
-                                    height: 300,
-                                    width: '100%',
-                                    overflow: 'hidden',
-                                }}
-                            >
+                            <View>
                                 <View
                                     style={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        height: 500,
+                                        height: 30,
                                         width: '100%',
+                                        flexDirection: 'row',
+                                        justifyContent: 'center',
+                                        borderBottomColor: '#938D8D',
+                                        borderBottomWidth: 1,
+                                        marginBottom: 10,
                                     }}
                                 >
-                                    <BarCodeScanner
-                                        onBarCodeScanned={handleBarCodeScanned}
-                                        style={StyleSheet.absoluteFillObject}
-                                    />
-                                </View>
-                            </View>
-                        )
-                    ) : (
-                        <View />
-                    )}
-                    <View style={styles.customerlist}>
-                        <ScrollView
-                            style={{
-                                width: '90%',
-                                marginTop: 10,
-                                marginBottom: 5,
-                            }}
-                        >
-                            <View style={styles.customerlistContainer}>
-                                <View style={styles.customerlist_header}>
                                     <Text
                                         style={{
                                             fontSize: 16,
@@ -640,231 +367,671 @@ const GroupBookingScreen = ({ route }) => {
                                             color: '#3DC5B5',
                                         }}
                                     >
-                                        Customer List
+                                        Select Room
                                     </Text>
                                 </View>
-                                {list.map((customer, index) => {
-                                    return (
-                                        <Customer
-                                            index={index + 1}
-                                            name={customer.userName}
-                                            cccd={customer.userIdCard}
-                                            key={index}
-                                            removeitem={() => removeItemHandle({ indexList: index })}
-                                        ></Customer>
-                                    );
-                                })}
-                                {hasPermission === false ? (
-                                    <View style={styles.addmorebtn}>
-                                        <TouchableOpacity onPress={() => handleAddCustomer()}>
-                                            <Text style={{ color: '#2EC4B6' }}>Add Customer</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                ) : (
-                                    <View></View>
-                                )}
-                            </View>
-                        </ScrollView>
-                    </View>
-                    <View style={styles.bookingDetails}>
-                        <ScrollView
-                            style={{
-                                width: '90%',
-                                marginTop: 10,
-                                marginBottom: 5,
-                            }}
-                        >
-                            <View style={styles.customerlistContainer}>
-                                <View style={styles.customerlist_header}>
-                                    <Text
-                                        style={{
-                                            fontSize: 16,
-                                            fontWeight: '500',
-                                            color: '#3DC5B5',
-                                        }}
-                                    >
-                                        List Used Item
-                                    </Text>
-                                </View>
+
                                 {data.bookingDetails ? (
-                                    data.bookingDetails.map((item) => {
-                                        return params.roomId.map((e, index) => {
-                                            if (e == item.roomId) {
-                                                return (
-                                                    <View
-                                                        key={`usedItem ${item.bookingDetailId}`}
-                                                        style={{ width: '90%' }}
+                                    <ScrollView
+                                        horizontal
+                                        contentContainerStyle={{
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between',
+                                            display: 'flex',
+                                        }}
+                                    >
+                                        {data.bookingDetails.map((item) => {
+                                            return (
+                                                <View key={item.bookingDetailId}>
+                                                    <TouchableOpacity
+                                                        style={[
+                                                            {
+                                                                paddingRight: 20,
+                                                                paddingLeft: 20,
+                                                                alignItems: 'center',
+                                                            },
+                                                        ]}
+                                                        onPress={() => getRoomQRCode(item.bookingDetailId)}
                                                     >
-                                                        <View style={{ alignItems: 'center' }}>
-                                                            <Text
-                                                                style={{
-                                                                    paddingTop: 10,
-                                                                    borderBottomColor: '#938D8D',
-                                                                    borderBottomWidth: 1,
-                                                                    marginBottom: 10,
-                                                                }}
-                                                            >
-                                                                Room {params.roomName[index]} | Total: {item.extraFee}
-                                                            </Text>
-                                                            {item.bookingDetailMenus.length > 0 ? (
-                                                                item.bookingDetailMenus.map((used) => {
-                                                                    return (
-                                                                        <View
-                                                                            style={{
-                                                                                width: '100%',
-                                                                                flexDirection: 'row',
-                                                                                borderBottomWidth: 1,
-                                                                                borderBottomColor: '#D9D9D9',
-                                                                            }}
-                                                                        >
-                                                                            <View style={{ flex: 5 }}>
-                                                                                <Text>
-                                                                                    {used.bookingDetailMenuName}
-                                                                                </Text>
-                                                                            </View>
-                                                                            <View
-                                                                                style={{
-                                                                                    flex: 3,
+                                                        <Icon name="home" size={24} color={'#3DC5B5'}></Icon>
 
-                                                                                    alignItems: 'center',
-                                                                                }}
-                                                                            >
-                                                                                <Text>
-                                                                                    Price: {used.bookingDetailMenuPrice}
-                                                                                    k
-                                                                                </Text>
-                                                                            </View>
-                                                                            <View
-                                                                                style={{
-                                                                                    flex: 1,
-
-                                                                                    alignItems: 'center',
-                                                                                }}
-                                                                            >
-                                                                                <Text>
-                                                                                    x {used.bookingDetailMenuQuanity}
-                                                                                </Text>
-                                                                            </View>
-                                                                            <View
-                                                                                style={{
-                                                                                    flex: 1,
-
-                                                                                    alignItems: 'center',
-                                                                                }}
-                                                                            >
-                                                                                <Icon
-                                                                                    name="close"
-                                                                                    size={24}
-                                                                                    onPress={() =>
-                                                                                        handleRemoveItemUsed(
-                                                                                            used.bookingDetailMenuId,
-                                                                                            used.bookingDetailId,
-                                                                                        )
-                                                                                    }
-                                                                                ></Icon>
-                                                                            </View>
-                                                                        </View>
-                                                                    );
-                                                                })
-                                                            ) : (
-                                                                <></>
-                                                            )}
-                                                            <View style={styles.addmorebtn}>
-                                                                <TouchableOpacity
-                                                                    onPress={() =>
-                                                                        AddItem(
-                                                                            item.bookingDetailMenus,
-                                                                            item.bookingDetailId,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    <Text style={{ color: '#2EC4B6' }}>Add Item</Text>
-                                                                </TouchableOpacity>
-                                                            </View>
-                                                        </View>
-                                                    </View>
-                                                );
-                                            }
-                                        });
-                                    })
+                                                        {params.roomId.map((e, index) => {
+                                                            if (e == item.roomId) {
+                                                                return (
+                                                                    <Text key={`asdasdasd${index}`}>
+                                                                        {' '}
+                                                                        {params.roomName[index]}
+                                                                    </Text>
+                                                                );
+                                                            }
+                                                        })}
+                                                    </TouchableOpacity>
+                                                </View>
+                                            );
+                                        })}
+                                    </ScrollView>
                                 ) : (
                                     <></>
                                 )}
                             </View>
-                        </ScrollView>
-                    </View>
-                </ScrollView>
-            </View>
-            <View style={{ flex: 1.8, flexDirection: 'row', alignItems: 'center' }}>
-                {hasPermission ? (
-                    <View
-                        style={{
-                            height: '100%',
-                            width: '100%',
-                            borderWidth: 2,
-                            borderColor: '#2EC4B6',
-                            backgroundColor: '#FFF',
-                            borderBottomWidth: 0,
-                            borderTopWidth: 0,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <TouchableOpacity
-                            onPress={() => {
-                                handleModifyAddCustomer();
-                            }}
-                        >
+                        )}
+                    </Modal>
+                </Portal>
+                {showAddItem ? (
+                    <View style={styles.showPopup}>
+                        <View style={styles.PopupContainer}>
                             <View
                                 style={{
-                                    width: 160,
-                                    height: 40,
-                                    backgroundColor: '#3DC5B5',
-                                    borderRadius: 20,
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    padding: 20,
+                                    paddingTop: 5,
+                                    paddingBottom: 5,
+                                    borderBottomWidth: 1,
                                     alignItems: 'center',
-                                    justifyContent: 'center',
+                                    flex: 1,
                                 }}
                             >
-                                <Text style={{ fontSize: 20, fontWeight: '600', color: '#fff' }}>Submit</Text>
+                                <Text style={{ fontSize: 16, fontWeight: '600', color: '#3DC5B5' }}>Used Item </Text>
+                                <TouchableOpacity onPress={() => setShowAddItem(!showAddItem)}>
+                                    <Icon name="close" size={30}></Icon>
+                                </TouchableOpacity>
                             </View>
-                        </TouchableOpacity>
+                            <View
+                                style={{
+                                    flex: 9,
+                                    paddingLeft: 20,
+                                    paddingRight: 20,
+                                    paddingTop: 10,
+                                    paddingBottom: 20,
+                                }}
+                            >
+                                <ScrollView>
+                                    {itemListUse.map((item, index) => {
+                                        if (item.itemStatus) {
+                                            return (
+                                                <Itemlist
+                                                    itemName={item.itemName}
+                                                    itemPrice={item.itemPrice}
+                                                    itemType={item.itemType}
+                                                    itemUse={item.quantity}
+                                                    key={`a${index}b`}
+                                                    handleSum={(e) =>
+                                                        handleSumTotal({
+                                                            quantity: e,
+                                                            price: item.itemPrice,
+                                                            itemName: item.itemName,
+                                                        })
+                                                    }
+                                                ></Itemlist>
+                                            );
+                                        }
+                                        return <></>;
+                                    })}
+                                </ScrollView>
+                            </View>
+                            <View
+                                style={{
+                                    flex: 2.5,
+                                    paddingLeft: 20,
+                                    paddingRight: 20,
+                                }}
+                            >
+                                {/* Extra Fee */}
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Text>Extra Fee :</Text>
+                                    <TextInput
+                                        style={{
+                                            height: 36,
+                                            width: 120,
+                                            borderColor: '#000',
+                                            borderWidth: 1,
+                                            borderRadius: 24,
+                                            paddingLeft: 15,
+                                        }}
+                                        value={extraFee}
+                                        placeholder={'Extra Fee'}
+                                        keyboardType={'numeric'}
+                                        onChangeText={(e) => setExtraFee(e)}
+                                    ></TextInput>
+                                    <Text>VNĐ</Text>
+                                </View>
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        marginTop: 10,
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Text>Reason :</Text>
+                                    <TextInput
+                                        style={{
+                                            height: 36,
+                                            width: 250,
+                                            borderColor: '#000',
+                                            borderWidth: 1,
+                                            borderRadius: 24,
+                                            paddingLeft: 15,
+                                        }}
+                                        value={reasonExtra}
+                                        placeholder={'Reason of Extra Fee '}
+                                        onChangeText={(e) => setReasonExtra(e)}
+                                    ></TextInput>
+                                </View>
+                            </View>
+                            <View
+                                style={{
+                                    flex: 1.5,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderTopColor: '#3DC5B5',
+                                    borderTopWidth: 1,
+                                }}
+                            >
+                                <TouchableOpacity onPress={handleSubmitUsedItem}>
+                                    <View
+                                        style={{
+                                            height: 36,
+                                            width: 120,
+                                            backgroundColor: '#3DC5B5',
+                                            borderRadius: 24,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Text>Submit</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                     </View>
                 ) : (
-                    <View
-                        style={{
-                            height: '100%',
-                            width: '100%',
-                            borderWidth: 2,
-                            borderColor: '#2EC4B6',
-                            backgroundColor: '#FFF',
-                            borderBottomWidth: 0,
-                            borderTopWidth: 0,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <TouchableOpacity
-                            onPress={() => {
-                                handleCheckOut();
+                    <></>
+                )}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <View style={styles.back}>
+                            <Icon name="chevron-left" size={30} color="#3DC5B5"></Icon>
+                        </View>
+                    </TouchableOpacity>
+                    <Text style={styles.header_title}>Booking :{params.bookingId}</Text>
+                </View>
+                <View style={[styles.container]}>
+                    <ScrollView style={{ width: '100%' }}>
+                        <View
+                            style={{
+                                paddingLeft: 30,
+                                paddingBottom: 10,
+                                width: '100%',
+                                borderBottomWidth: 1,
+                                borderBottomColor: '#938D8D',
                             }}
                         >
+                            <View style={styles.customerlist_header}>
+                                <Text
+                                    style={{
+                                        fontSize: 16,
+                                        fontWeight: '500',
+                                        color: '#3DC5B5',
+                                    }}
+                                >
+                                    List Room
+                                </Text>
+                            </View>
+
+                            {data.bookingDetails ? (
+                                <ScrollView horizontal>
+                                    {data.bookingDetails.map((item) => {
+                                        return (
+                                            <View key={item.bookingDetailId}>
+                                                <TouchableOpacity
+                                                    style={[
+                                                        {
+                                                            paddingRight: 20,
+                                                            paddingLeft: 20,
+                                                            alignItems: 'center',
+                                                        },
+                                                    ]}
+                                                >
+                                                    <Icon name="home" size={24} color={'#3DC5B5'}></Icon>
+
+                                                    {params.roomId.map((e, index) => {
+                                                        if (e == item.roomId) {
+                                                            return (
+                                                                <Text key={`asdasdasd${index}`}>
+                                                                    {' '}
+                                                                    {params.roomName[index]}
+                                                                </Text>
+                                                            );
+                                                        }
+                                                    })}
+                                                </TouchableOpacity>
+                                            </View>
+                                        );
+                                    })}
+                                </ScrollView>
+                            ) : (
+                                <></>
+                            )}
+                        </View>
+                        <View style={styles.card_content}>
                             <View
                                 style={{
-                                    width: 160,
-                                    height: 40,
-                                    backgroundColor: '#3DC5B5',
-                                    borderRadius: 20,
-                                    alignItems: 'center',
+                                    position: 'absolute',
+                                    height: '100%',
+                                    right: 30,
+                                    display: 'flex',
                                     justifyContent: 'center',
+                                    zIndex: 100,
                                 }}
                             >
-                                <Text style={{ fontSize: 20, fontWeight: '600', color: '#fff' }}>Check Out</Text>
+                                <Icon
+                                    name="qrcode-scan"
+                                    size={30}
+                                    color={'#000'}
+                                    onPress={() => handleGetQRCode()}
+                                ></Icon>
                             </View>
-                        </TouchableOpacity>
-                    </View>
-                )}
-            </View>
-        </SafeAreaView>
+                            <Text style={styles.card_content_text}>
+                                CheckIn Date:{' '}
+                                <Text style={styles.card_data}>
+                                    {moment(data.qrCheckUp ? data.qrCheckUp.checkIn : undefined).format(
+                                        'HH:MM , DD-MM-YYYY',
+                                    )}
+                                </Text>
+                            </Text>
+                            <Text style={styles.card_content_text}>
+                                CheckOut Date:{' '}
+                                <Text style={styles.card_data}>{moment(data.endDate).format('DD-MM-YYYY')}</Text>
+                            </Text>
+                            <Text style={styles.card_content_text}>
+                                Type: <Text style={styles.card_data}>{data.paymentMethod}</Text>
+                            </Text>
+
+                            <View style={{ overflow: 'scroll', flexWrap: 'wrap' }}>
+                                <Text style={styles.card_content_text}>
+                                    Status:{' '}
+                                    {data.paymentCondition !== undefined ? (
+                                        <Text
+                                            style={[
+                                                styles.card_data,
+                                                {
+                                                    color:
+                                                        data.paymentCondition === 'True'
+                                                            ? '#53A1FD'
+                                                            : data.deposit > 0
+                                                            ? '#F9A000'
+                                                            : '#D72C36',
+                                                },
+                                            ]}
+                                        >
+                                            {data.paymentCondition === 'True' ? (
+                                                <Text>Đã Thanh Toán</Text>
+                                            ) : data.deposit < 1 ? (
+                                                <Text>Chưa Thanh Toán</Text>
+                                            ) : (
+                                                <Text>
+                                                    Đã Thanh Toán{' '}
+                                                    <Text style={{ color: '#53A1FD' }}>
+                                                        <NumberFormat
+                                                            value={data.deposit * 1000}
+                                                            thousandSeparator={true}
+                                                            displayType={'text'}
+                                                            renderText={(value) => <Text>{value}</Text>}
+                                                        ></NumberFormat>
+                                                    </Text>
+                                                    VNĐ
+                                                </Text>
+                                            )}
+                                        </Text>
+                                    ) : (
+                                        <View></View>
+                                    )}
+                                </Text>
+                            </View>
+                            <Text style={styles.card_content_text}>
+                                Room Price:
+                                <Text style={styles.price_number}>
+                                    <NumberFormat
+                                        value={RoomsPrice * 1000}
+                                        thousandSeparator={true}
+                                        displayType={'text'}
+                                        renderText={(value) => (
+                                            <Text>
+                                                {' '}
+                                                {value}{' '}
+                                                <Text style={[styles.price_currency, { color: '#53A1FD' }]}> VNĐ</Text>
+                                            </Text>
+                                        )}
+                                    ></NumberFormat>
+                                </Text>
+                            </Text>
+                            <Text style={styles.card_content_text}>
+                                ExtraFee:
+                                <Text style={styles.price_number}>
+                                    <NumberFormat
+                                        value={(data.totalPrice - RoomsPrice) * 1000}
+                                        thousandSeparator={true}
+                                        displayType={'text'}
+                                        renderText={(value) => (
+                                            <Text>
+                                                {' '}
+                                                {value}{' '}
+                                                <Text style={[styles.price_currency, { color: '#53A1FD' }]}> VNĐ</Text>
+                                            </Text>
+                                        )}
+                                    ></NumberFormat>
+                                </Text>
+                            </Text>
+                            <Text style={styles.card_content_text}>
+                                Total:
+                                <Text style={styles.price_number}>
+                                    <NumberFormat
+                                        value={(data.totalPrice - data.deposit) * 1000}
+                                        thousandSeparator={true}
+                                        displayType={'text'}
+                                        renderText={(value) => (
+                                            <Text>
+                                                {' '}
+                                                {value}{' '}
+                                                <Text style={[styles.price_currency, { color: '#53A1FD' }]}> VNĐ</Text>
+                                            </Text>
+                                        )}
+                                    ></NumberFormat>
+                                </Text>
+                            </Text>
+                        </View>
+                        {hasPermission === true ? (
+                            Platform.OS === 'ios' ? (
+                                <Camera
+                                    style={{
+                                        height: 300,
+                                        width: '100%',
+                                    }}
+                                    type="back"
+                                    onBarCodeScanned={handleBarCodeScanned}
+                                    focusDepth={1}
+                                ></Camera>
+                            ) : (
+                                <View
+                                    style={{
+                                        height: 300,
+                                        width: '100%',
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    <View
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            height: 500,
+                                            width: '100%',
+                                        }}
+                                    >
+                                        <BarCodeScanner
+                                            onBarCodeScanned={handleBarCodeScanned}
+                                            style={StyleSheet.absoluteFillObject}
+                                        />
+                                    </View>
+                                </View>
+                            )
+                        ) : (
+                            <View />
+                        )}
+                        <View style={styles.customerlist}>
+                            <ScrollView
+                                style={{
+                                    width: '90%',
+                                    marginTop: 10,
+                                    marginBottom: 5,
+                                }}
+                            >
+                                <View style={styles.customerlistContainer}>
+                                    <View style={styles.customerlist_header}>
+                                        <Text
+                                            style={{
+                                                fontSize: 16,
+                                                fontWeight: '500',
+                                                color: '#3DC5B5',
+                                            }}
+                                        >
+                                            Customer List
+                                        </Text>
+                                    </View>
+                                    {list.map((customer, index) => {
+                                        return (
+                                            <Customer
+                                                index={index + 1}
+                                                name={customer.userName}
+                                                cccd={customer.userIdCard}
+                                                key={index}
+                                                removeitem={() => removeItemHandle({ indexList: index })}
+                                            ></Customer>
+                                        );
+                                    })}
+                                    {hasPermission === false ? (
+                                        <View style={styles.addmorebtn}>
+                                            <TouchableOpacity onPress={() => handleAddCustomer()}>
+                                                <Text style={{ color: '#2EC4B6' }}>Add Customer</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    ) : (
+                                        <View></View>
+                                    )}
+                                </View>
+                            </ScrollView>
+                        </View>
+                        <View style={styles.bookingDetails}>
+                            <ScrollView
+                                style={{
+                                    width: '90%',
+                                    marginTop: 10,
+                                    marginBottom: 5,
+                                }}
+                            >
+                                <View style={styles.customerlistContainer}>
+                                    <View style={styles.customerlist_header}>
+                                        <Text
+                                            style={{
+                                                fontSize: 16,
+                                                fontWeight: '500',
+                                                color: '#3DC5B5',
+                                            }}
+                                        >
+                                            List Used Item
+                                        </Text>
+                                    </View>
+                                    {data.bookingDetails ? (
+                                        data.bookingDetails.map((item) => {
+                                            return params.roomId.map((e, index) => {
+                                                if (e == item.roomId) {
+                                                    return (
+                                                        <View
+                                                            key={`usedItem ${item.bookingDetailId}`}
+                                                            style={{ width: '90%' }}
+                                                        >
+                                                            <View style={{ alignItems: 'center' }}>
+                                                                <Text
+                                                                    style={{
+                                                                        paddingTop: 10,
+                                                                        borderBottomColor: '#938D8D',
+                                                                        borderBottomWidth: 1,
+                                                                        marginBottom: 10,
+                                                                    }}
+                                                                >
+                                                                    Room {params.roomName[index]} | Total:{' '}
+                                                                    {item.extraFee}
+                                                                </Text>
+                                                                {item.bookingDetailMenus.length > 0 ? (
+                                                                    item.bookingDetailMenus.map((used) => {
+                                                                        return (
+                                                                            <View
+                                                                                style={{
+                                                                                    width: '100%',
+                                                                                    flexDirection: 'row',
+                                                                                    borderBottomWidth: 1,
+                                                                                    borderBottomColor: '#D9D9D9',
+                                                                                }}
+                                                                            >
+                                                                                <View style={{ flex: 5 }}>
+                                                                                    <Text>
+                                                                                        {used.bookingDetailMenuName}
+                                                                                    </Text>
+                                                                                </View>
+                                                                                <View
+                                                                                    style={{
+                                                                                        flex: 3,
+
+                                                                                        alignItems: 'center',
+                                                                                    }}
+                                                                                >
+                                                                                    <Text>
+                                                                                        Price:{' '}
+                                                                                        {used.bookingDetailMenuPrice}k
+                                                                                    </Text>
+                                                                                </View>
+                                                                                <View
+                                                                                    style={{
+                                                                                        flex: 1,
+
+                                                                                        alignItems: 'center',
+                                                                                    }}
+                                                                                >
+                                                                                    <Text>
+                                                                                        x{' '}
+                                                                                        {used.bookingDetailMenuQuanity}
+                                                                                    </Text>
+                                                                                </View>
+                                                                                <View
+                                                                                    style={{
+                                                                                        flex: 1,
+
+                                                                                        alignItems: 'center',
+                                                                                    }}
+                                                                                >
+                                                                                    <Icon
+                                                                                        name="close"
+                                                                                        size={24}
+                                                                                        onPress={() =>
+                                                                                            handleRemoveItemUsed(
+                                                                                                used.bookingDetailMenuId,
+                                                                                                used.bookingDetailId,
+                                                                                            )
+                                                                                        }
+                                                                                    ></Icon>
+                                                                                </View>
+                                                                            </View>
+                                                                        );
+                                                                    })
+                                                                ) : (
+                                                                    <></>
+                                                                )}
+                                                                <View style={styles.addmorebtn}>
+                                                                    <TouchableOpacity
+                                                                        onPress={() =>
+                                                                            AddItem(
+                                                                                item.bookingDetailMenus,
+                                                                                item.bookingDetailId,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <Text style={{ color: '#2EC4B6' }}>
+                                                                            Add Item
+                                                                        </Text>
+                                                                    </TouchableOpacity>
+                                                                </View>
+                                                            </View>
+                                                        </View>
+                                                    );
+                                                }
+                                            });
+                                        })
+                                    ) : (
+                                        <></>
+                                    )}
+                                </View>
+                            </ScrollView>
+                        </View>
+                    </ScrollView>
+                </View>
+                <View style={{ flex: 1.8, flexDirection: 'row', alignItems: 'center' }}>
+                    {hasPermission ? (
+                        <View
+                            style={{
+                                height: '100%',
+                                width: '100%',
+                                borderWidth: 2,
+                                borderColor: '#2EC4B6',
+                                backgroundColor: '#FFF',
+                                borderBottomWidth: 0,
+                                borderTopWidth: 0,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => {
+                                    handleModifyAddCustomer();
+                                }}
+                            >
+                                <View
+                                    style={{
+                                        width: 160,
+                                        height: 40,
+                                        backgroundColor: '#3DC5B5',
+                                        borderRadius: 20,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Text style={{ fontSize: 20, fontWeight: '600', color: '#fff' }}>Submit</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View
+                            style={{
+                                height: '100%',
+                                width: '100%',
+                                borderWidth: 2,
+                                borderColor: '#2EC4B6',
+                                backgroundColor: '#FFF',
+                                borderBottomWidth: 0,
+                                borderTopWidth: 0,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => {
+                                    handleCheckOut();
+                                }}
+                            >
+                                <View
+                                    style={{
+                                        width: 160,
+                                        height: 40,
+                                        backgroundColor: '#3DC5B5',
+                                        borderRadius: 20,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Text style={{ fontSize: 20, fontWeight: '600', color: '#fff' }}>Check Out</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
+            </SafeAreaView>
+        </Provider>
     );
 };
 const styles = StyleSheet.create({

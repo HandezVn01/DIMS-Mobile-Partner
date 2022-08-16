@@ -11,9 +11,13 @@ const GeneralItem = ({ icon, title, action }) => {
     const dispatch = useDispatch();
     const handleAction = () => {
         if (action !== 'logout') {
-            navigation.navigate(action, {
-                logout: true,
-            });
+            if (action === 'Help') {
+                Alert.alert('Help is maintenance !');
+            } else {
+                navigation.navigate(action, {
+                    logout: true,
+                });
+            }
         } else {
             logout();
         }

@@ -15,11 +15,27 @@ const PersonalScreen = () => {
     const dispatch = useDispatch();
     const [prompt, setPrompt] = useState(false);
     const [inputText, setInputText] = useState('');
+    let list = [];
     useEffect(() => {
         dispatch(dispatchFecth());
         getCustomerList(hotelId, token)
             .then((result) => {
-                setCustomers(result);
+                result.map((e) => {
+                    if (e.inboundUsers.length > 0) {
+                        e.inboundUsers.map((customer) => {
+                            list.push({
+                                userName: customer.userName,
+                                userAddress: customer.userAddress,
+                                userBirthday: customer.userBirthday,
+                                userIdCard: customer.userIdCard,
+                                userSex: customer.userSex,
+                                roomName: e.bookingDetails[0].roomName,
+                            });
+                        });
+                    }
+                });
+                console.log(list);
+                setCustomers(list);
             })
             .catch((err) => Alert.alert('Error ', 'Server is busy . Please try again later ! '))
             .finally(() => dispatch(dispatchSuccess()));
@@ -32,11 +48,12 @@ const PersonalScreen = () => {
                 email: inputText,
             })
             .then((data) => {
-                Alert.alert('Success !', 'Đã gửi danh sách về email của bạn !'), setPrompt(false);
+                Alert.alert('Success !', 'Đã gửi danh sách về email của bạn !');
             })
             .catch((err) => {
-                Alert.alert('Sorry ! Have Some Thing Wrong, Please try again late.'), setPrompt(false);
+                Alert.alert('Sorry ! Have Some Thing Wrong, Please try again late.');
             });
+        setPrompt(false);
     };
     return (
         <View style={{ flex: 1 }}>
@@ -54,7 +71,13 @@ const PersonalScreen = () => {
             </View>
             <View style={{ flex: 17, justifyContent: 'center', padding: 20 }}>
                 <ScrollView>
-                    <Customer index={'STT'} name={'Name'} cccd={'Number ID Card'} display={true}></Customer>
+                    <Customer
+                        index={'STT'}
+                        name={'Name'}
+                        cccd={'Number ID Card'}
+                        room={'Room'}
+                        display={true}
+                    ></Customer>
                     {customers.map((customer, index) => {
                         return (
                             <Customer
@@ -62,6 +85,7 @@ const PersonalScreen = () => {
                                 name={customer.userName}
                                 cccd={customer.userIdCard}
                                 display={true}
+                                room={customer.roomName}
                                 key={index}
                             ></Customer>
                         );

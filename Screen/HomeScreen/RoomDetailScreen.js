@@ -640,22 +640,27 @@ const RoomDetailScreen = ({ route }) => {
                                     borderRadius={24}
                                     style={{ height: '100%', width: '100%' }}
                                 />
-                                <View
-                                    style={{
-                                        position: 'absolute',
-                                        height: '100%',
-                                        right: 30,
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                    }}
-                                >
-                                    <Icon
-                                        name="qrcode-scan"
-                                        size={30}
-                                        color={'#000'}
-                                        onPress={() => handleGetQRCode(data.bookingDetailId)}
-                                    ></Icon>
-                                </View>
+                                {status === 2 ? (
+                                    <View
+                                        style={{
+                                            position: 'absolute',
+                                            height: '100%',
+                                            right: 30,
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            zIndex: 10,
+                                        }}
+                                    >
+                                        <Icon
+                                            name="qrcode-scan"
+                                            size={30}
+                                            color={'#000'}
+                                            onPress={() => handleGetQRCode(data.bookingDetailId)}
+                                        ></Icon>
+                                    </View>
+                                ) : (
+                                    <></>
+                                )}
                                 <View style={styles.card_content}>
                                     <Text style={styles.card_content_text}>
                                         CheckIn Date:{' '}

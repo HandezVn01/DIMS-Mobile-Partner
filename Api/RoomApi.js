@@ -5,12 +5,16 @@ const timestamp = new Date().getTime();
 const today = new Date(timestamp + 7 * 3600 * 1000);
 // Get Room Qr
 export const getRoomQR = async (bookingDetailId, token) => {
-    const res = await axios.get(
-        `https://dims-system.herokuapp.com/api/HostManage/Host-A-Detail-Room-Qr?BookingDetailID=${bookingDetailId}`,
-        {
-            headers: { Authorization: `Bearer ${token}` },
-        },
-    );
+    const res = await axios.get(`api/HostManage/Host-A-Detail-Room-Qr?BookingDetailID=${bookingDetailId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data;
+};
+// get Clean Room QR Code
+export const getCleanRoomQR = async (roomID, token) => {
+    const res = await axios.get(`api/HostManage/Host-A-Detail-Room-Qr-Staff?RoomID=${roomID}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
     return res.data;
 };
 // Get User Used-Menu
